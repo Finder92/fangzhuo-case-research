@@ -1,10 +1,10 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { MagicStick, Search, Connection, RefreshRight, VideoPlay, Check } from '@element-plus/icons-vue'
+import { MagicStick, Search, Connection, RefreshRight, VideoPlay, Check, CircleCheck } from '@element-plus/icons-vue'
 import { observations } from '../data/observations'
 
-const emit = defineEmits(['generate-advice', 'story-synced'])
+const emit = defineEmits(['generate-advice'])
 const selected = ref([])
 const keyword = ref('')
 const activeType = ref('全部')
@@ -17,6 +17,7 @@ const storyEntries = ref({})
 const storyForm = reactive({ semester: '2026年春季学期', section: '幼儿故事', children: [] })
 const detailVisible = ref(false)
 const detailRecord = ref(null)
+const storyPublished = ref(false)
 
 const filtered = computed(() => observations.filter((item) => (
   !keyword.value || `${item.title}${item.child}${item.teacher}`.includes(keyword.value)
@@ -84,17 +85,9 @@ const regenerate = () => {
 
 const syncStory = () => {
   if (!storyForm.children.length) return ElMessage.warning('请至少选择一名幼儿')
-  const archives = storyForm.children.map((child) => ({
-    child,
-    semester: storyForm.semester,
-    section: storyForm.section,
-    observationDate: observationDateText.value,
-    teacher: recordsForChild.value.find((record) => record.children.includes(child))?.teacher || '',
-    images: storyRecords.value.filter((record) => record.children.includes(child)).map((record) => record.cover),
-    ...storyEntries.value[child],
-  }))
   storyVisible.value = false
-  emit('story-synced', archives)
+  selected.value = []
+  storyPublished.value = true
 }
 </script>
 
@@ -212,6 +205,14 @@ const syncStory = () => {
         </main>
       </div>
       <template #footer><span class="story-footer-summary">将同步 {{ storyForm.children.length }} 篇成长档案内容</span><el-button @click="storyVisible = false">取消</el-button><el-button type="primary" :disabled="storyLoading" @click="syncStory">确认同步至成长档案</el-button></template>
+    </el-dialog>
+
+    <el-dialog v-model="storyPublished" width="420px" class="story-published-dialog" :show-close="false" align-center>
+      <div class="story-published-content">
+        <span><el-icon><CircleCheck /></el-icon></span>
+        <h3>已发布至成长档案</h3>
+      </div>
+      <template #footer><el-button type="primary" @click="storyPublished = false">知道了</el-button></template>
     </el-dialog>
   </section>
 </template>

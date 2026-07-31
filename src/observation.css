@@ -126,6 +126,12 @@
 .child-checkboxes { margin-top: 10px; display: grid; grid-template-columns: 58px 1fr; align-items: center; }
 .growth-story-dialog .el-dialog__footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 .story-footer-summary { margin-right: auto; color: #827594; font-size: 9px; }
+.story-published-dialog .el-dialog { border-radius: 14px; }
+.story-published-dialog .el-dialog__body { padding: 32px 24px 10px; }
+.story-published-dialog .el-dialog__footer { padding: 12px 24px 26px; text-align: center; }
+.story-published-content { display: flex; align-items: center; flex-direction: column; gap: 13px; text-align: center; }
+.story-published-content > span { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; color: #51a971; background: #e9f7ee; font-size: 30px; }
+.story-published-content h3 { margin: 0; color: #344157; font-size: 17px; }
 .archive-editor { min-width: 0; }
 .observation-detail-dialog { --el-dialog-border-radius: 13px; }
 .detail-dialog-title { display: flex; align-items: center; gap: 9px; }
