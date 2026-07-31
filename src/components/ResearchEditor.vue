@@ -33,7 +33,7 @@ const form = reactive({
   location: props.draft?.location || '三楼多功能教室',
   date: props.draft?.date || '2026-08-06 14:00',
   arrangement: props.draft?.arrangement || '',
-  cover: props.draft?.cover || '/covers/sand-water.svg',
+  cover: props.draft?.cover || `${import.meta.env.BASE_URL}covers/sand-water.svg`,
   coverSource: props.draft?.coverSource || '关联案例首图',
   caseCount: props.draft?.caseCount || 2,
   host: props.draft?.host || '王鹏',
@@ -131,7 +131,7 @@ const handleCoverChange = (uploadFile) => {
 }
 
 const restoreCaseCover = () => {
-  form.cover = '/covers/sand-water.svg'
+  form.cover = `${import.meta.env.BASE_URL}covers/sand-water.svg`
   form.coverSource = '关联案例首图'
   ElMessage.success('已恢复使用关联案例首图')
 }

@@ -1,3 +1,5 @@
+const cover = (name) => `${import.meta.env.BASE_URL}covers/${name}`
+
 export const observations = [
   {
     id: 1,
@@ -15,7 +17,7 @@ export const observations = [
     record: '乐乐先搭了一条道路，发现转弯处总会倒。他邀请米米一起想办法，两人尝试增加底座，并用纸筒代替缺少的圆柱积木。完成后，他们向同伴介绍了“城市入口”。',
     analysis: '幼儿已能围绕共同目标协商材料和分工，开始使用替代性材料解决问题。',
     media: 4,
-    cover: '/covers/construction.svg',
+    cover: cover('construction.svg'),
     mediaType: '视频',
   },
   {
@@ -34,7 +36,7 @@ export const observations = [
     record: '米米把蓝色和黄色水杯用纸巾连接，等待颜色爬升。第一次水量不同，她发现蓝色更快，于是重新倒成一样多，再次比较并画下结果。',
     analysis: '幼儿能够发现变量不一致，并主动调整实验条件，具有初步的公平比较意识。',
     media: 3,
-    cover: '/covers/reflection.svg',
+    cover: cover('reflection.svg'),
     mediaType: '视频',
   },
   {
@@ -53,7 +55,7 @@ export const observations = [
     record: '轩轩和天天都想当邮递员。轩轩说“你先送红房子，我送完蓝房子就换”，并画了两条路线。轮换后，他提醒天天先看门牌号。',
     analysis: '幼儿能提出可执行的轮换规则，并用路线图支持共同游戏。',
     media: 2,
-    cover: '/covers/role-play.svg',
+    cover: cover('role-play.svg'),
     mediaType: '视频',
   },
   {
@@ -72,7 +74,7 @@ export const observations = [
     record: '多米诺骨牌连续在转弯处停下。悦悦先皱眉，随后把弯道间距缩小，请同伴蹲下看看是否对齐。第四次全部倒下时，她把调整方法画在记录纸上。',
     analysis: '幼儿能够管理挫败情绪，借助同伴视角验证并记录有效策略。',
     media: 5,
-    cover: '/covers/story-play.svg',
+    cover: cover('story-play.svg'),
     mediaType: '视频',
   },
   {
@@ -91,7 +93,7 @@ export const observations = [
     record: '天天发现花盆里的水很多，询问后知道两位同伴都浇过水。他画了一张星期表，约定浇水后在当天画一滴水。',
     analysis: '幼儿能从真实问题出发建立简单记录规则，并主动邀请同伴共同遵守。',
     media: 1,
-    cover: '/covers/sand-water.svg',
+    cover: cover('sand-water.svg'),
     mediaType: '图片',
   },
   {
@@ -110,7 +112,7 @@ export const observations = [
     record: '安安、果果和小宇尝试把水引到沙坑另一侧。他们发现转弯处总是坍塌，于是用树枝做支撑，用石块压住边缘，并反复倒水测试。',
     analysis: '幼儿能够围绕真实问题协同尝试，并根据测试结果持续调整结构。',
     media: 6,
-    cover: '/covers/sand-water.svg',
+    cover: cover('sand-water.svg'),
     mediaType: '视频',
   },
   {
@@ -129,7 +131,7 @@ export const observations = [
     record: '两名幼儿决定为好朋友制作一座彩虹房子。她们把绘画和拼贴结合起来，意见不同时用“各选一种”的方法继续完成作品。',
     analysis: '幼儿能表达个人审美，也能使用简单规则协调不同想法。',
     media: 4,
-    cover: '/covers/reflection.svg',
+    cover: cover('reflection.svg'),
     mediaType: '图片',
   },
   {
@@ -148,7 +150,7 @@ export const observations = [
     record: '珺珺请“病人”坐下，问他哪里不舒服，随后用听诊器检查，并提醒他回家多喝水。',
     analysis: '幼儿能迁移就医经验，并通过询问推动角色游戏持续发展。',
     media: 3,
-    cover: '/covers/role-play.svg',
+    cover: cover('role-play.svg'),
     mediaType: '视频',
   },
   {
@@ -167,7 +169,7 @@ export const observations = [
     record: '三名幼儿每天入园后先查看蜗牛盒，用图画标记蜗牛的位置，并比较菜叶上的咬痕。',
     analysis: '幼儿开始形成连续观察意识，能够使用图画保存和比较证据。',
     media: 7,
-    cover: '/covers/story-play.svg',
+    cover: cover('story-play.svg'),
     mediaType: '图片',
   },
   {
@@ -186,7 +188,7 @@ export const observations = [
     record: '熹熹每次落子前都会蹲下或侧身观察。发现对手即将连线时，他主动改变计划，并向同伴说明阻挡的位置。',
     analysis: '幼儿能从多角度读取空间关系，并用语言解释简单策略。',
     media: 2,
-    cover: '/covers/construction.svg',
+    cover: cover('construction.svg'),
     mediaType: '视频',
   },
 ]

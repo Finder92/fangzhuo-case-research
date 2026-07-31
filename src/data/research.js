@@ -1,4 +1,5 @@
 export const stages = ['教研准备', '在线研讨', '现场记录', '成果沉淀']
+const cover = (name) => `${import.meta.env.BASE_URL}covers/${name}`
 
 export const researchItems = [
   {
@@ -14,7 +15,7 @@ export const researchItems = [
     date: '08月06日 14:00',
     updated: '12分钟前',
     progress: 62,
-    cover: '/covers/sand-water.svg',
+    cover: cover('sand-water.svg'),
     caseCount: 2,
   },
   {
@@ -30,7 +31,7 @@ export const researchItems = [
     date: '08月08日 09:30',
     updated: '今天 09:24',
     progress: 35,
-    cover: '/covers/construction.svg',
+    cover: cover('construction.svg'),
     caseCount: 3,
   },
   {
@@ -46,7 +47,7 @@ export const researchItems = [
     date: '07月29日 15:00',
     updated: '昨天 17:42',
     progress: 82,
-    cover: '/covers/role-play.svg',
+    cover: cover('role-play.svg'),
     caseCount: 1,
   },
   {
@@ -62,7 +63,7 @@ export const researchItems = [
     date: '07月18日 14:00',
     updated: '07月22日',
     progress: 100,
-    cover: '/covers/reflection.svg',
+    cover: cover('reflection.svg'),
     caseCount: 4,
   },
   {
@@ -78,7 +79,7 @@ export const researchItems = [
     date: '08月12日 10:00',
     updated: '07月28日',
     progress: 68,
-    cover: '/covers/story-play.svg',
+    cover: cover('story-play.svg'),
     caseCount: 2,
   },
 ]

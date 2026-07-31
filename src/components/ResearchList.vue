@@ -14,6 +14,7 @@ const emit = defineEmits(['create', 'open', 'edit', 'update-role'])
 const search = ref('')
 const status = ref('全部状态')
 const semester = ref('2025-2026学年度下学期')
+const fallbackCover = `${import.meta.env.BASE_URL}covers/sand-water.svg`
 
 const visibleItems = computed(() => (
   props.role === '管理视角'
@@ -134,7 +135,7 @@ const tagType = (itemStatus) => ({
         >
           <div class="topic-cell">
             <div class="topic-cover">
-              <img :src="item.cover || '/covers/sand-water.svg'" :alt="`${item.title}案例封面`" />
+              <img :src="item.cover || fallbackCover" :alt="`${item.title}案例封面`" />
               <span>{{ item.caseCount || 1 }} 个案例</span>
             </div>
             <div class="topic-content">
