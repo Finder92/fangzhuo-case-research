@@ -174,7 +174,7 @@ const syncStory = () => {
       <template #header>
         <div class="story-dialog-title">
           <span class="ai-orb"><el-icon><MagicStick /></el-icon></span>
-          <div><h3>{{ storyRecords.length > 1 ? 'AI 批量生成成长档案' : 'AI 生成成长档案' }}</h3><p>已选 {{ storyRecords.length }} 篇观察，涉及 {{ storyChildren.length }} 名幼儿；每名幼儿分别生成并预览</p></div>
+          <div><h3>{{ storyRecords.length > 1 ? 'AI 批量生成成长档案' : 'AI 生成成长档案' }}</h3><p>已选 {{ storyRecords.length }} 篇观察，涉及 {{ storyChildren.length }} 名幼儿；每名幼儿分别生成独立内容</p></div>
         </div>
       </template>
       <div class="story-safety"><el-icon><Connection /></el-icon>仅基于原始观察事实生成；不同幼儿的事实分别归组，不会混写成同一篇轶事</div>
@@ -193,8 +193,7 @@ const syncStory = () => {
             <span>查看幼儿档案</span>
             <button v-for="child in storyChildren" :key="child" :class="{ active: activeStoryChild === child }" @click="activeStoryChild = child"><i>{{ child.slice(0, 1) }}</i>{{ child }}<em v-if="storyForm.children.includes(child)">待同步</em></button>
           </div>
-          <div class="archive-editor-preview">
-            <section class="archive-editor">
+          <section class="archive-editor">
               <div class="ai-draft-head">
                 <div><span>AI 生成内容</span><em>可编辑</em><small>引用 {{ recordsForChild.length }} 篇观察</small></div>
                 <el-button link :icon="RefreshRight" @click="regenerate">重新生成本篇</el-button>
@@ -209,21 +208,7 @@ const syncStory = () => {
                 <el-input class="observation-date-input" :model-value="observationDateText" readonly aria-label="观察日期" />
               </div>
               <div class="child-checkboxes"><label>同步对象</label><el-checkbox-group v-model="storyForm.children"><el-checkbox v-for="child in storyChildren" :key="child" :value="child">{{ child }}（1篇）</el-checkbox></el-checkbox-group></div>
-            </section>
-            <section class="growth-archive-preview">
-              <div class="archive-preview-label"><span>成长档案预览</span><small>与线上成长档案的“幼儿故事”内页一致</small></div>
-              <div class="archive-page">
-                <div class="archive-breadcrumb">成长档案 &gt; {{ activeStoryChild }}档案</div>
-                <div class="archive-book-head"><div class="archive-child-avatar">{{ activeStoryChild.slice(0, 1) }}</div><div><b>幼儿成长档案</b><span>2025-2026学年度下学期 · {{ activeStoryChild }}</span></div></div>
-                <div class="archive-photo-grid" :class="{ single: recordsForChild.length === 1 }">
-                  <img v-for="record in recordsForChild.slice(0, 3)" :key="record.id" :src="record.cover" :alt="record.title" />
-                </div>
-                <h3>{{ storyEntries[activeStoryChild]?.title }}</h3>
-                <p>{{ storyEntries[activeStoryChild]?.content }}</p>
-                <footer><span>{{ recordsForChild[0]?.teacher }}</span><span>{{ recordsForChild[0]?.date }}</span></footer>
-              </div>
-            </section>
-          </div>
+          </section>
         </main>
       </div>
       <template #footer><span class="story-footer-summary">将同步 {{ storyForm.children.length }} 篇成长档案内容</span><el-button @click="storyVisible = false">取消</el-button><el-button type="primary" :disabled="storyLoading" @click="syncStory">确认同步至成长档案</el-button></template>

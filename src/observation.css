@@ -126,27 +126,7 @@
 .child-checkboxes { margin-top: 10px; display: grid; grid-template-columns: 58px 1fr; align-items: center; }
 .growth-story-dialog .el-dialog__footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 .story-footer-summary { margin-right: auto; color: #827594; font-size: 9px; }
-.archive-editor-preview { display: grid; grid-template-columns: minmax(310px, .9fr) minmax(350px, 1.1fr); gap: 14px; }
 .archive-editor { min-width: 0; }
-.growth-archive-preview { min-width: 0; padding: 12px; border: 1px solid #dfe4eb; border-radius: 9px; background: #f4f5f7; }
-.archive-preview-label { margin-bottom: 9px; display: flex; align-items: center; justify-content: space-between; }
-.archive-preview-label span { color: #47546a; font-size: 10px; font-weight: 600; }
-.archive-preview-label small { color: #959eac; font-size: 8px; }
-.archive-page { max-height: 410px; overflow-y: auto; padding: 13px 15px 16px; border: 1px solid #e1e4e9; background: #fff; box-shadow: 0 3px 12px rgba(38,53,76,.06); scrollbar-width: thin; }
-.archive-breadcrumb { margin-bottom: 11px; color: #7c8798; font-size: 8px; }
-.archive-book-head { padding: 11px; display: flex; align-items: center; gap: 9px; border: 1px solid #e2e5ea; background: #fff; }
-.archive-child-avatar { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: #79a9e8; font-size: 13px; }
-.archive-book-head > div:last-child { display: flex; flex-direction: column; gap: 4px; }
-.archive-book-head b { color: #344157; font-size: 11px; }
-.archive-book-head span { color: #919baa; font-size: 8px; }
-.archive-photo-grid { margin-top: 11px; height: 122px; display: grid; grid-template-columns: 1.35fr .8fr; grid-template-rows: 1fr 1fr; gap: 4px; overflow: hidden; border-radius: 3px; }
-.archive-photo-grid img { width: 100%; height: 100%; object-fit: cover; }
-.archive-photo-grid img:first-child { grid-row: 1 / 3; }
-.archive-photo-grid.single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
-.archive-photo-grid.single img:first-child { grid-row: auto; }
-.archive-page h3 { margin: 13px 0 8px; color: #344157; font-size: 12px; text-align: center; }
-.archive-page > p { margin: 0; color: #596678; font-size: 8px; line-height: 1.8; white-space: pre-line; }
-.archive-page footer { margin-top: 12px; padding-top: 8px; display: flex; justify-content: space-between; border-top: 1px solid #edf0f3; color: #9aa3b0; font-size: 8px; }
 .observation-detail-dialog { --el-dialog-border-radius: 13px; }
 .detail-dialog-title { display: flex; align-items: center; gap: 9px; }
 .detail-dialog-title h3 { margin: 0; color: var(--ink); }
@@ -183,6 +163,7 @@
 .growth-archive-sidebar button > span { margin-left: auto; color: #58a07a; font-size: 8px; }
 .growth-archive-real-page { max-width: 720px; width: 100%; margin: 28px auto; padding: 30px 42px; border: 1px solid #e0e4e9; background: #fff; box-shadow: 0 5px 18px rgba(38, 53, 76, .07); }
 .real-page-header { padding-bottom: 18px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #edf0f3; }
+.real-page-header .archive-child-avatar { width: 36px; height: 36px; display: grid; place-items: center; flex: 0 0 36px; border-radius: 50%; color: #fff; background: #79a9e8; font-size: 13px; }
 .real-page-header > div:last-child { display: flex; flex-direction: column; gap: 4px; }
 .real-page-header span, .real-page-header small { color: #929ba8; font-size: 9px; }
 .real-page-header h2 { margin: 0; color: #354156; font-size: 19px; }
@@ -384,7 +365,6 @@
   .growth-story-dialog { width: calc(100vw - 20px) !important; margin-top: 3vh !important; }
   .story-compose { grid-template-columns: 1fr; max-height: 66vh; overflow-y: auto; }
   .story-compose aside { border-right: 0; border-bottom: 1px solid var(--line); }
-  .archive-editor-preview { grid-template-columns: 1fr; }
   .growth-archive-detail-page { padding: 16px 14px 92px; }
   .growth-archive-layout { display: flex; flex-direction: column; }
   .growth-archive-sidebar { padding: 11px; display: flex; gap: 7px; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); }
