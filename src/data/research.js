@@ -1,4 +1,4 @@
-export const stages = ['教研准备', '在线研讨', '教研召开', '现场记录', '成果沉淀']
+export const stages = ['教研准备', '在线研讨', '现场记录', '成果沉淀']
 
 export const researchItems = [
   {
@@ -14,6 +14,8 @@ export const researchItems = [
     date: '08月06日 14:00',
     updated: '12分钟前',
     progress: 62,
+    cover: '/covers/sand-water.svg',
+    caseCount: 2,
   },
   {
     id: 2,
@@ -28,12 +30,14 @@ export const researchItems = [
     date: '08月08日 09:30',
     updated: '今天 09:24',
     progress: 35,
+    cover: '/covers/construction.svg',
+    caseCount: 3,
   },
   {
     id: 3,
     title: '在角色游戏中，幼儿如何自主解决“生意冷清”或“游戏停滞”的问题',
     scope: '班级教研',
-    stage: 5,
+    stage: 4,
     status: '待总结',
     host: '石鸿雁',
     participants: 9,
@@ -42,12 +46,14 @@ export const researchItems = [
     date: '07月29日 15:00',
     updated: '昨天 17:42',
     progress: 82,
+    cover: '/covers/role-play.svg',
+    caseCount: 1,
   },
   {
     id: 4,
     title: '如何支持大班幼儿将游戏中的零散经验进行梳理、表征与分享',
     scope: '园级教研',
-    stage: 5,
+    stage: 4,
     status: '已完成',
     host: '韩雪媛',
     participants: 22,
@@ -56,13 +62,15 @@ export const researchItems = [
     date: '07月18日 14:00',
     updated: '07月22日',
     progress: 100,
+    cover: '/covers/reflection.svg',
+    caseCount: 4,
   },
   {
     id: 5,
     title: '教师如何通过“最小化且有效”的介入支持绘本表演游戏走向深度学习',
     scope: '年级组教研',
-    stage: 3,
-    status: '待召开',
+    stage: 2,
+    status: '研讨中',
     host: '王朝阳',
     participants: 6,
     topics: 2,
@@ -70,6 +78,8 @@ export const researchItems = [
     date: '08月12日 10:00',
     updated: '07月28日',
     progress: 68,
+    cover: '/covers/story-play.svg',
+    caseCount: 2,
   },
 ]
 

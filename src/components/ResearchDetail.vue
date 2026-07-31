@@ -3,7 +3,8 @@ import { computed, nextTick, reactive, ref } from 'vue'
 import {
   ArrowLeft, Plus, ChatDotRound, User, Calendar, Location, Bell,
   MoreFilled, Top, Star, Document, Promotion, CircleCheck, Clock,
-  Headset, PictureFilled, UploadFilled, Tickets
+  Headset, PictureFilled, UploadFilled, Tickets, MagicStick,
+  FolderOpened, Download, VideoCamera
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import StageTrack from './StageTrack.vue'
@@ -17,11 +18,16 @@ const emit = defineEmits(['back', 'status-change'])
 
 const currentStage = ref(props.item.stage)
 const currentStatus = ref(props.item.status)
-const activeTab = ref(
-  currentStage.value >= 5 ? '成果文件' : currentStage.value === 4 ? '现场记录' : '研讨话题',
-)
+const initialTab = () => {
+  if (currentStage.value >= 4) return '成果文件'
+  if (props.role === '管理视角' && currentStage.value === 3) return '现场记录'
+  if (currentStage.value >= 2) return '在线研讨'
+  return '教研主题'
+}
+const activeTab = ref(initialTab())
 const topicDialog = ref(false)
 const replyDrawer = ref(false)
+const memberDrawer = ref(false)
 const selectedTopic = ref(null)
 const topicTitle = ref('')
 const topicContent = ref('')
@@ -29,6 +35,7 @@ const topicScope = ref('整场教研')
 const replyText = ref('')
 const topics = ref(structuredClone(seedTopics).map((topic, index) => ({
   ...topic,
+  preset: index === 0,
   scope: index === 0
     ? '案例一：沙水区沟渠连续坍塌'
     : index === 1
@@ -54,11 +61,16 @@ const participants = reactive([
   { name: '许晨', className: '中五班', role: '教师', status: '未加入', color: '#a7afbf' },
   { name: '郭婷', className: '大五班', role: '教师', status: '未加入', color: '#a7afbf' },
   { name: '何雨', className: '课程部', role: '观察员', status: '未加入', color: '#a7afbf' },
-])
-const recordingStatus = ref(currentStage.value >= 5 ? '转写完成' : '待上传')
+].map((member, index) => ({
+  ...member,
+  topicCount: index === 0 ? 3 : index < 6 ? (index % 3) + 1 : index < 14 ? index % 2 : 0,
+  replyCount: index === 0 ? 11 : index < 6 ? 8 + (index % 4) : index < 14 ? 2 + (index % 5) : 0,
+})))
+const recordingStatus = ref(currentStage.value >= 4 ? '转写完成' : '待上传')
 const recordingFileName = ref(
-  currentStage.value >= 5 ? '沙水游戏专题教研现场录音.m4a' : '',
+  currentStage.value >= 4 ? '沙水游戏专题教研现场录音.m4a' : '',
 )
+const minutesStatus = ref(currentStage.value >= 4 ? '已生成' : '待生成')
 const caseResults = reactive([
   {
     id: 1,
@@ -84,7 +96,7 @@ const caseResults = reactive([
   },
 ])
 const overallSummaryStatus = ref(props.item.status === '已完成' ? '已完成' : '待生成')
-const reportStatus = ref(props.item.status === '已完成' ? '已完成' : '待生成')
+const archiveStatus = ref(props.item.status === '已完成' ? '已完成' : '待生成')
 const generatingResult = ref('')
 const resultDialog = ref(false)
 const resultDialogTitle = ref('')
@@ -95,8 +107,35 @@ const meeting = reactive({
   actualTime: '2026-08-06 14:05',
   attendance: 16,
   absent: 2,
-  note: '围绕幼儿在沟渠坍塌问题中的连续尝试，重点讨论了教师介入时机、同伴协商以及记录工具的使用。',
+  note: currentStage.value >= 4
+    ? '## 会议结论\n\n- 先描述幼儿行为事实，再判断教师介入时机。\n- 使用“预测—验证—调整”记录表支持幼儿持续探究。\n\n## 主要分歧\n\n教师是否应在第一次坍塌后立即提供材料建议，后续通过实践回访验证。\n\n## 后续行动\n\n1. 黄曼丽老师负责一周实践记录。\n2. 林芳老师整理同伴协作案例。\n3. 主持人于 8 月 13 日组织线上回访。'
+    : '',
 })
+
+const tabs = computed(() => (
+  props.role === '教师视角'
+    ? [
+        { label: '教研主题', minStage: 1 },
+        { label: '在线研讨', minStage: 2 },
+        { label: '成果文件', minStage: 4 },
+      ]
+    : [
+        { label: '教研主题', minStage: 1 },
+        { label: '在线研讨', minStage: 2 },
+        { label: '现场记录', minStage: 3 },
+        { label: '成果文件', minStage: 4 },
+      ]
+))
+const stageTrackItems = computed(() => (
+  props.role === '教师视角'
+    ? ['教研主题', '在线研讨', '成果文件']
+    : ['教研准备', '在线研讨', '现场记录', '成果沉淀']
+))
+const stageTrackCurrent = computed(() => (
+  props.role === '教师视角'
+    ? currentStage.value >= 4 ? 3 : currentStage.value >= 2 ? 2 : 1
+    : currentStage.value
+))
 
 const totalReplies = computed(() => topics.value.reduce((sum, topic) => sum + topic.replies.length, 0))
 const caseCompletedCount = computed(() => caseResults.filter((item) => item.status === '已完成').length)
@@ -116,6 +155,18 @@ const teacherStatusText = computed(() => ({
   请假: '你已提交请假，本次教研将记录为请假。',
 }[teacherStatus.value]))
 
+const memberActivity = (member) => {
+  const score = member.topicCount * 3 + member.replyCount
+  if (score >= 15) return { label: '高活跃', type: 'success' }
+  if (score >= 6) return { label: '已参与', type: 'warning' }
+  return { label: '待参与', type: 'info' }
+}
+
+const switchTab = (tab) => {
+  if (currentStage.value < tab.minStage) return
+  activeTab.value = tab.label
+}
+
 const memberStatusType = (status) => ({
   已参与: 'success',
   已出席: 'success',
@@ -131,16 +182,14 @@ const resultStatusType = (status) => ({
 
 const stageHint = computed(() => ({
   1: ['教研主题尚未发布', '完善主题、活动方案与参与设置后，即可发布在线研讨。'],
-  2: ['在线研讨正在进行', '建议主持人及时回应话题，并在现场召开前整理关键观点。'],
-  3: ['等待现场教研召开', '在线研讨已完成，请按计划召开教研会并做好现场记录。'],
-  4: ['请完善现场记录', '补充出勤、现场纪要、照片和录音；录音可自动转写。'],
-  5: ['进入成果沉淀', '现场资料已归档，可以逐个生成案例小结，再形成整次教研总结与归档报告。'],
+  2: ['在线研讨正在进行', '线上讨论与线下会议均归在本阶段；会议结束后进入现场记录。'],
+  3: ['请完善现场记录', '上传会议资料和录音，转写完成后由 AI 生成可编辑的 Markdown 会议纪要。'],
+  4: ['进入成果沉淀', '先形成案例小结和整次教研总结，最后生成本次会议资料归档包。'],
 }[currentStage.value]))
 
 const statusType = computed(() => ({
   草稿: 'info',
   研讨中: 'success',
-  待召开: 'warning',
   现场记录: 'warning',
   待总结: 'danger',
   已完成: 'info',
@@ -151,6 +200,12 @@ const recordingType = computed(() => ({
   转写中: 'warning',
   转写完成: 'success',
 }[recordingStatus.value]))
+
+const minutesType = computed(() => ({
+  待生成: 'info',
+  生成中: 'warning',
+  已生成: 'success',
+}[minutesStatus.value]))
 
 const updateStatus = (status, stage, progress) => {
   currentStatus.value = status
@@ -175,24 +230,24 @@ const checkIn = () => {
 }
 
 const openTeacherAction = () => {
-  if (currentStage.value >= 5) {
+  if (currentStage.value >= 4) {
     activeTab.value = '成果文件'
     return
   }
   if (teacherStatus.value === '未加入') return joinResearch()
   if (currentStage.value <= 2) {
-    activeTab.value = '研讨话题'
+    activeTab.value = '在线研讨'
     if (teacherStatus.value === '已加入') topicDialog.value = true
     return
   }
-  if (currentStage.value <= 4 && teacherStatus.value !== '已出席') return checkIn()
+  ElMessage.info('线下会议结束后，由主持人整理现场资料并发布成果')
 }
 
 const teacherActionLabel = computed(() => {
-  if (currentStage.value >= 5) return '查看成果'
+  if (currentStage.value >= 4) return '查看成果'
   if (teacherStatus.value === '未加入') return '加入本次教研'
   if (currentStage.value <= 2) return teacherStatus.value === '已加入' ? '发表观点' : '继续研讨'
-  if (currentStage.value <= 4) return teacherStatus.value === '已出席' ? '已出席' : '现场签到'
+  if (currentStage.value === 3) return '等待成果整理'
   return '查看成果'
 })
 
@@ -223,15 +278,15 @@ const generateOverallSummary = () => {
   }, 900)
 }
 
-const generateReport = () => {
+const generateArchive = () => {
   if (overallSummaryStatus.value !== '已完成') return
-  generatingResult.value = 'report'
-  reportStatus.value = '生成中'
+  generatingResult.value = 'archive'
+  archiveStatus.value = '生成中'
   setTimeout(() => {
-    reportStatus.value = '已完成'
+    archiveStatus.value = '已完成'
     generatingResult.value = ''
-    updateStatus('已完成', 5, 100)
-    ElMessage.success('教研报告已生成，本次教研已完成')
+    updateStatus('已完成', 4, 100)
+    ElMessage.success('本次会议资料已打包归档，教研已完成')
   }, 900)
 }
 
@@ -282,15 +337,15 @@ const addReply = () => {
 
 const enterRecordStage = () => {
   ElMessageBox.confirm(
-    '结束研讨后将进入“现场记录”。请补充出勤、照片、现场纪要，并按需上传录音进行转写。',
-    '结束研讨并归档现场？',
+    '线下会议结束后将进入“现场记录”。请补充出勤和会议资料，上传录音并完成转写与 AI 会议纪要。',
+    '结束教研并整理现场资料？',
     {
       confirmButtonText: '进入现场记录',
       cancelButtonText: '暂不结束',
       type: 'warning',
     },
   ).then(() => {
-    updateStatus('现场记录', 4, 78)
+    updateStatus('现场记录', 3, 78)
     activeTab.value = '现场记录'
     scrollPageTop()
     ElMessage.success('已进入现场记录，请完善本次教研资料')
@@ -298,8 +353,8 @@ const enterRecordStage = () => {
 }
 
 const openPrimaryAction = () => {
-  if (currentStage.value < 4) return enterRecordStage()
-  if (currentStage.value === 4) {
+  if (currentStage.value < 3) return enterRecordStage()
+  if (currentStage.value === 3) {
     activeTab.value = '现场记录'
     scrollPageTop()
     return
@@ -311,6 +366,8 @@ const openPrimaryAction = () => {
 const startTranscription = (fileName = '沙水游戏专题教研现场录音.m4a') => {
   recordingFileName.value = fileName
   recordingStatus.value = '转写中'
+  minutesStatus.value = '待生成'
+  meeting.note = ''
   setTimeout(() => {
     recordingStatus.value = '转写完成'
     ElMessage.success('录音转写完成，已生成可编辑的文字稿')
@@ -319,8 +376,23 @@ const startTranscription = (fileName = '沙水游戏专题教研现场录音.m4a
 
 const handleRecording = (file) => startTranscription(file.name)
 
+const generateMinutes = () => {
+  if (recordingStatus.value !== '转写完成') {
+    return ElMessage.warning('请先完成录音转写')
+  }
+  minutesStatus.value = '生成中'
+  setTimeout(() => {
+    meeting.note = '## 会议结论\n\n- 先描述幼儿行为事实，再判断教师介入时机。\n- 使用“预测—验证—调整”记录表支持幼儿持续探究。\n\n## 主要分歧\n\n教师是否应在第一次坍塌后立即提供材料建议，后续通过实践回访验证。\n\n## 后续行动\n\n1. 黄曼丽老师负责一周实践记录。\n2. 林芳老师整理同伴协作案例。\n3. 主持人于 8 月 13 日组织线上回访。'
+    minutesStatus.value = '已生成'
+    ElMessage.success('AI 会议纪要已生成，可继续编辑 Markdown 内容')
+  }, 900)
+}
+
 const confirmRecord = () => {
-  updateStatus('待总结', 5, 90)
+  if (minutesStatus.value !== '已生成') {
+    return ElMessage.warning('请先根据录音转写生成 AI 会议纪要')
+  }
+  updateStatus('待总结', 4, 90)
   activeTab.value = '成果文件'
   scrollPageTop()
   ElMessage.success('现场记录已归档，现在可以生成教研成果')
@@ -341,6 +413,9 @@ const confirmRecord = () => {
         </div>
       </div>
       <div class="detail-actions">
+        <el-button :icon="User" @click="memberDrawer = true">
+          参与成员 {{ joinedCount }}/{{ participants.length }}
+        </el-button>
         <el-button v-if="role === '管理视角'" :icon="Bell">通知参与人</el-button>
         <el-button
           v-if="role === '管理视角' && currentStatus !== '已完成'"
@@ -348,13 +423,13 @@ const confirmRecord = () => {
           :icon="CircleCheck"
           @click="openPrimaryAction"
         >
-          {{ currentStage < 4 ? '结束教研' : currentStage === 4 ? '完善现场记录' : '整理教研成果' }}
+          {{ currentStage < 3 ? '结束教研' : currentStage === 3 ? '完善现场记录' : '整理教研成果' }}
         </el-button>
         <el-button
           v-if="role === '教师视角'"
           type="primary"
           :icon="teacherStatus === '已出席' ? CircleCheck : User"
-          :disabled="currentStage <= 4 && teacherStatus === '已出席'"
+          :disabled="currentStage === 3 || (currentStage <= 2 && teacherStatus === '已出席')"
           @click="openTeacherAction"
         >
           {{ teacherActionLabel }}
@@ -364,7 +439,11 @@ const confirmRecord = () => {
     </header>
 
     <div class="detail-stage-card">
-      <StageTrack :current="currentStage" :completed="currentStatus === '已完成'" />
+      <StageTrack
+        :current="stageTrackCurrent"
+        :items="stageTrackItems"
+        :completed="currentStatus === '已完成'"
+      />
       <div class="stage-hint">
         <el-icon><Clock /></el-icon>
         <div><strong>{{ stageHint[0] }}</strong><span>{{ stageHint[1] }}</span></div>
@@ -375,7 +454,7 @@ const confirmRecord = () => {
       <span><el-icon><User /></el-icon>主持人 {{ item.host }}</span>
       <span><el-icon><Calendar /></el-icon>{{ item.date }}</span>
       <span><el-icon><Location /></el-icon>三楼多功能教室</span>
-      <span><el-icon><User /></el-icon>{{ item.participants }} 位参与教师</span>
+      <button class="meta-member-entry" @click="memberDrawer = true"><el-icon><User /></el-icon>{{ item.participants }} 位参与教师 · 查看活跃度</button>
     </div>
 
     <div v-if="role === '教师视角'" class="teacher-participation-bar">
@@ -392,18 +471,19 @@ const confirmRecord = () => {
 
     <div class="detail-tabs">
       <button
-        v-for="tab in ['教研概览', '研讨话题', '参与成员', '现场记录', '成果文件']"
-        :key="tab"
-        :class="{ active: activeTab === tab }"
-        @click="activeTab = tab"
+        v-for="tab in tabs"
+        :key="tab.label"
+        :class="{ active: activeTab === tab.label, disabled: currentStage < tab.minStage }"
+        :disabled="currentStage < tab.minStage"
+        :title="currentStage < tab.minStage ? '尚未进入此流程节点' : ''"
+        @click="switchTab(tab)"
       >
-        {{ tab }}
-        <span v-if="tab === '研讨话题'">{{ topics.length }}</span>
-        <span v-else-if="tab === '参与成员'">{{ joinedCount }}</span>
+        {{ tab.label }}
+        <span v-if="tab.label === '在线研讨'">{{ topics.length }}</span>
       </button>
     </div>
 
-    <div v-if="activeTab === '研讨话题'" class="discussion-layout">
+    <div v-if="activeTab === '在线研讨'" class="discussion-layout">
       <main class="topics-panel">
         <div class="topics-head">
           <div><h2>研讨话题</h2><p>共 {{ topics.length }} 个话题、{{ totalReplies }} 条回复</p></div>
@@ -421,6 +501,7 @@ const confirmRecord = () => {
           <div class="post-main">
             <div class="post-top">
               <span v-if="topic.pinned" class="pin"><el-icon><Top /></el-icon>置顶</span>
+              <span v-if="topic.preset" class="preset-mark">管理员预设</span>
               <span class="topic-scope">{{ topic.scope || '整场教研' }}</span>
               <h3>{{ topic.title }}</h3>
               <el-button v-if="role === '管理视角'" link :icon="MoreFilled" @click.stop />
@@ -456,9 +537,9 @@ const confirmRecord = () => {
       </aside>
     </div>
 
-    <div v-else-if="activeTab === '教研概览'" class="overview-grid">
+    <div v-else-if="activeTab === '教研主题'" class="overview-grid">
       <div class="overview-main">
-        <h2>主题依据</h2>
+        <h2>教研目标</h2>
         <p>基于小六班连续三周的沙水游戏观察，幼儿多次尝试修复沟渠坍塌，但在结构加固、材料选择与同伴协作方面仍存在持续探究空间。</p>
         <h2>研讨安排</h2>
         <ol>
@@ -475,63 +556,11 @@ const confirmRecord = () => {
       </div>
     </div>
 
-    <div v-else-if="activeTab === '参与成员'" class="members-panel">
-      <div class="members-head">
-        <div>
-          <h2>教研参与成员</h2>
-          <p>查看参与教师的姓名、所在班级及当前参与状态。</p>
-        </div>
-        <el-button
-          v-if="role === '管理视角'"
-          :icon="Bell"
-          plain
-          @click="ElMessage.success(`已提醒 ${absentParticipationCount} 位未加入教师`)"
-        >
-          提醒未加入教师
-        </el-button>
-      </div>
-
-      <div class="member-summary">
-        <div><strong>{{ participants.length }}</strong><span>应参与教师</span></div>
-        <div><strong>{{ joinedCount }}</strong><span>已加入教研</span></div>
-        <div><strong>{{ participatedCount }}</strong><span>已参与研讨</span></div>
-        <div><strong>{{ absentParticipationCount }}</strong><span>尚未加入</span></div>
-      </div>
-
-      <div class="member-grid">
-        <article
-          v-for="member in participants"
-          :key="member.name"
-          class="member-card"
-          :class="{ current: member.current && role === '教师视角' }"
-        >
-          <div class="member-avatar" :style="{ background: member.color }">
-            {{ member.name.slice(-1) }}
-          </div>
-          <div class="member-info">
-            <div>
-              <strong>{{ member.name }}</strong>
-              <span v-if="member.current && role === '教师视角'" class="member-self">我</span>
-              <span v-if="member.role !== '教师'" class="member-role">{{ member.role }}</span>
-            </div>
-            <span>{{ member.className }}</span>
-          </div>
-          <el-tag
-            size="small"
-            effect="plain"
-            :type="memberStatusType(member.status)"
-          >
-            {{ member.status }}
-          </el-tag>
-        </article>
-      </div>
-    </div>
-
     <div v-else-if="activeTab === '现场记录'" class="record-layout">
       <main class="record-main">
         <div class="section-title">
-          <div><h2>现场记录</h2><p>归档实际召开情况，录音上传后可自动生成转写稿。</p></div>
-          <el-tag :type="currentStage >= 5 ? 'success' : 'warning'">{{ currentStage >= 5 ? '已归档' : '待完善' }}</el-tag>
+          <div><h2>现场记录</h2><p>归档线下会议资料，录音转写后由 AI 生成可编辑会议纪要。</p></div>
+          <el-tag :type="currentStage >= 4 ? 'success' : 'warning'">{{ currentStage >= 4 ? '已归档' : '待完善' }}</el-tag>
         </div>
 
         <el-form label-position="top" :disabled="role === '教师视角'">
@@ -566,17 +595,53 @@ const confirmRecord = () => {
             </article>
           </div>
 
-          <el-form-item label="主持人现场纪要">
-            <el-input v-model="meeting.note" type="textarea" :rows="7" maxlength="3000" show-word-limit placeholder="记录现场形成的关键观点、共识、分歧和后续行动" />
-          </el-form-item>
+          <section class="ai-minutes-block">
+            <div class="ai-minutes-head">
+              <div>
+                <span class="ai-mark"><el-icon><MagicStick /></el-icon></span>
+                <div><strong>AI 会议纪要</strong><small>根据完整录音转写稿生成 Markdown 初稿，生成后主持人可编辑。</small></div>
+              </div>
+              <div>
+                <el-tag :type="minutesType" size="small">{{ minutesStatus }}</el-tag>
+                <el-button
+                  type="primary"
+                  plain
+                  :icon="MagicStick"
+                  :loading="minutesStatus === '生成中'"
+                  :disabled="recordingStatus !== '转写完成'"
+                  @click="generateMinutes"
+                >
+                  {{ minutesStatus === '已生成' ? '重新生成' : 'AI 生成纪要' }}
+                </el-button>
+              </div>
+            </div>
+            <el-input
+              v-if="minutesStatus === '已生成'"
+              v-model="meeting.note"
+              type="textarea"
+              :rows="12"
+              maxlength="6000"
+              show-word-limit
+              placeholder="AI 生成后可在这里编辑 Markdown 会议纪要"
+            />
+            <el-alert
+              v-else
+              title="会议纪要不能从空白手工新建。请先上传录音并完成转写，再由 AI 生成初稿。"
+              type="info"
+              show-icon
+              :closable="false"
+            />
+            <p v-if="minutesStatus === '已生成'" class="markdown-tip">Markdown 格式 · 支持标题、列表、行动项等结构，保存时保留编辑版本。</p>
+          </section>
         </el-form>
 
         <div class="record-footer">
-          <span>录音为可选项；没有录音时，可直接使用主持人纪要生成成果。</span>
+          <span>完成录音转写和 AI 会议纪要后，才能进入成果沉淀。</span>
           <el-button
-            v-if="role === '管理视角' && currentStage < 5"
+            v-if="role === '管理视角' && currentStage < 4"
             type="primary"
             :icon="CircleCheck"
+            :disabled="minutesStatus !== '已生成'"
             @click="confirmRecord"
           >
             确认记录并进入总结
@@ -591,7 +656,7 @@ const confirmRecord = () => {
             <li class="done"><el-icon><CircleCheck /></el-icon><span>实际时间与出勤</span></li>
             <li :class="{ done: recordingStatus === '转写完成' }"><el-icon><CircleCheck /></el-icon><span>录音与转写稿（可选）</span></li>
             <li class="done"><el-icon><CircleCheck /></el-icon><span>现场照片与附件</span></li>
-            <li class="done"><el-icon><CircleCheck /></el-icon><span>主持人现场纪要</span></li>
+            <li :class="{ done: minutesStatus === '已生成' }"><el-icon><CircleCheck /></el-icon><span>AI 会议纪要（Markdown）</span></li>
           </ul>
         </div>
         <div class="side-card transcript-card">
@@ -607,11 +672,11 @@ const confirmRecord = () => {
     </div>
 
     <div v-else-if="activeTab === '成果文件'" class="result-panel">
-      <template v-if="currentStage >= 5 && (role === '管理视角' || currentStatus === '已完成')">
+      <template v-if="currentStage >= 4 && (role === '管理视角' || currentStatus === '已完成')">
         <div class="result-page-head">
           <div>
             <h2>{{ role === '管理视角' ? '成果沉淀' : '教研成果' }}</h2>
-            <p>先完成每个案例的小结，再汇总整次教研结论，最终形成可归档的教研报告。</p>
+            <p>先完成每个案例的小结，再汇总整次教研结论，最终打包本次会议的全部归档资料。</p>
           </div>
           <el-tag :type="currentStatus === '已完成' ? 'success' : 'warning'" effect="light">
             {{ currentStatus === '已完成' ? '全部成果已完成' : '成果整理中' }}
@@ -629,9 +694,9 @@ const confirmRecord = () => {
             <div><strong>教研总结</strong><small>{{ overallSummaryStatus }}</small></div>
           </div>
           <i></i>
-          <div class="result-progress-step" :class="{ done: reportStatus === '已完成' }">
-            <span><el-icon><Tickets /></el-icon></span>
-            <div><strong>归档报告</strong><small>{{ reportStatus }}</small></div>
+          <div class="result-progress-step" :class="{ done: archiveStatus === '已完成' }">
+            <span><el-icon><FolderOpened /></el-icon></span>
+            <div><strong>会议归档包</strong><small>{{ archiveStatus }}</small></div>
           </div>
         </div>
 
@@ -685,13 +750,13 @@ const confirmRecord = () => {
             <div class="result-source-list">
               <span><el-icon><CircleCheck /></el-icon>{{ caseResults.length }} 份案例小结</span>
               <span><el-icon><CircleCheck /></el-icon>{{ topics.length }} 个研讨话题</span>
-              <span><el-icon><CircleCheck /></el-icon>现场纪要与录音转写</span>
+              <span><el-icon><CircleCheck /></el-icon>录音转写与 AI 会议纪要</span>
               <span><el-icon><CircleCheck /></el-icon>{{ item.participants }} 位教师参与记录</span>
             </div>
             <div class="overall-action">
               <p v-if="!allCasesCompleted">完成全部案例小结后即可生成教研总结。</p>
               <p v-else-if="overallSummaryStatus !== '已完成'">资料已齐备，可生成整次教研总结。</p>
-              <p v-else>教研总结已完成，可继续生成归档报告。</p>
+              <p v-else>教研总结已完成，可继续打包本次会议归档资料。</p>
               <el-button
                 v-if="overallSummaryStatus === '已完成'"
                 plain
@@ -712,42 +777,50 @@ const confirmRecord = () => {
           </div>
         </section>
 
-        <section class="report-result-section" :class="{ locked: overallSummaryStatus !== '已完成' }">
-          <div class="report-icon"><el-icon><Tickets /></el-icon></div>
+        <section class="report-result-section archive-result-section" :class="{ locked: overallSummaryStatus !== '已完成' }">
+          <div class="report-icon"><el-icon><FolderOpened /></el-icon></div>
           <div>
-            <h3>教研归档报告</h3>
-            <p>整合案例小结、教研总结、成员参与和现场资料，形成一份完整归档文件。</p>
+            <h3>本次会议归档</h3>
+            <p>将文字、图片、视频、录音、转写稿、AI 会议纪要、案例小结和教研总结压缩为 ZIP 包。</p>
+            <div class="archive-file-types">
+              <span><el-icon><Document /></el-icon>文字与文档</span>
+              <span><el-icon><PictureFilled /></el-icon>图片</span>
+              <span><el-icon><VideoCamera /></el-icon>视频</span>
+              <span><el-icon><Headset /></el-icon>录音</span>
+            </div>
           </div>
-          <el-tag :type="resultStatusType(reportStatus)" effect="plain">{{ reportStatus }}</el-tag>
+          <el-tag :type="resultStatusType(archiveStatus)" effect="plain">{{ archiveStatus }}</el-tag>
           <el-button
-            v-if="reportStatus === '已完成'"
+            v-if="archiveStatus === '已完成'"
             type="primary"
             plain
-            @click="openResult('教研归档报告', '报告已整合本次教研的主题方案、两份案例小结、整次教研总结、参与记录、现场纪要与录音转写，可用于园本教研归档与成果分享。')"
+            :icon="Download"
+            @click="ElMessage.success('归档包下载任务已创建：沙水游戏专题教研_20260806.zip')"
           >
-            {{ role === '管理视角' ? '预览报告' : '查看报告' }}
+            下载归档包
           </el-button>
           <el-button
             v-else-if="role === '管理视角'"
             type="primary"
             :disabled="overallSummaryStatus !== '已完成'"
-            :loading="generatingResult === 'report'"
-            @click="generateReport"
+            :loading="generatingResult === 'archive'"
+            @click="generateArchive"
           >
-            生成并完成教研
+            打包归档并完成教研
           </el-button>
         </section>
       </template>
       <el-empty
-        v-else-if="role === '教师视角' && currentStage >= 5"
+        v-else-if="role === '教师视角' && currentStage >= 4"
         description="教研成果正在整理，发布后即可查看"
       />
-      <el-empty v-else description="完成现场记录后，才能生成小结、总结与分析报告" />
+      <el-empty v-else description="完成现场记录后，才能生成案例小结、教研总结与会议归档包" />
     </div>
 
     <el-empty v-else description="18 位教师已加入本次教研" />
 
     <el-dialog v-model="resultDialog" :title="resultDialogTitle" width="680px">
+      <div class="markdown-editor-label"><span>Markdown 内容</span><small>{{ role === '教师视角' ? '只读查看' : '支持编辑后保存' }}</small></div>
       <el-input
         v-model="resultDraft"
         type="textarea"
@@ -759,6 +832,55 @@ const confirmRecord = () => {
         <el-button v-if="role === '管理视角'" type="primary" @click="resultDialog = false; ElMessage.success('成果内容已保存')">保存修改</el-button>
       </template>
     </el-dialog>
+
+    <el-drawer v-model="memberDrawer" size="440px" direction="rtl" class="member-drawer">
+      <template #header>
+        <div class="drawer-title">
+          <span>参与成员</span>
+          <small>{{ joinedCount }}/{{ participants.length }} 已加入 · {{ participatedCount }} 人已参与讨论</small>
+        </div>
+      </template>
+      <div class="member-drawer-body">
+        <div class="member-drawer-summary">
+          <div><strong>{{ topics.length }}</strong><span>话题</span></div>
+          <div><strong>{{ totalReplies }}</strong><span>回复</span></div>
+          <div><strong>{{ participatedCount }}</strong><span>活跃成员</span></div>
+        </div>
+        <div class="member-drawer-tools">
+          <span>活跃度根据成员发表话题和回复数量计算</span>
+          <el-button
+            v-if="role === '管理视角'"
+            size="small"
+            plain
+            :icon="Bell"
+            @click="ElMessage.success(`已提醒 ${absentParticipationCount} 位待参与教师`)"
+          >
+            提醒待参与
+          </el-button>
+        </div>
+        <div class="member-drawer-list">
+          <article
+            v-for="member in participants"
+            :key="member.name"
+            class="member-drawer-row"
+            :class="{ current: member.current && role === '教师视角' }"
+          >
+            <div class="member-avatar" :style="{ background: member.color }">{{ member.name.slice(-1) }}</div>
+            <div class="member-info">
+              <div>
+                <strong>{{ member.name }}</strong>
+                <span v-if="member.current && role === '教师视角'" class="member-self">我</span>
+                <span v-if="member.role !== '教师'" class="member-role">{{ member.role }}</span>
+              </div>
+              <span>{{ member.className }} · {{ member.topicCount }} 个话题 · {{ member.replyCount }} 条回复</span>
+            </div>
+            <el-tag size="small" effect="plain" :type="memberActivity(member).type">
+              {{ memberActivity(member).label }}
+            </el-tag>
+          </article>
+        </div>
+      </div>
+    </el-drawer>
 
     <el-dialog v-model="topicDialog" title="发表研讨话题" width="560px">
       <el-form label-position="top">

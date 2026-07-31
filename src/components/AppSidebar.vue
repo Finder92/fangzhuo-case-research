@@ -1,12 +1,17 @@
 <script setup>
 import { ref } from 'vue'
 
+defineProps({
+  activeKey: { type: String, default: 'case-research' },
+})
+const emit = defineEmits(['navigate'])
+
 const groups = [
-  { label: '观察与反思', children: ['观察记录', '我的案例'] },
-  { label: '成长档案', children: ['成长册', '成长轶事'] },
-  { label: '园本教研', children: ['已提交案例', '典型案例', '案例教研', '案例诊断'] },
-  { label: '备课本', children: ['周计划', '我的教案'] },
-  { label: '其他功能', children: ['设置', '统计'] },
+  { label: '观察与反思', children: [{ label: '观察记录', key: 'observation-records' }, { label: '我的案例', key: 'my-cases' }] },
+  { label: '成长档案', children: [{ label: '成长册', key: 'growth-book' }, { label: '成长轶事', key: 'growth-stories' }] },
+  { label: '园本教研', children: [{ label: '已提交案例', key: 'submitted-cases' }, { label: '典型案例', key: 'typical-cases' }, { label: '案例教研', key: 'case-research' }, { label: '案例诊断', key: 'case-diagnosis' }] },
+  { label: '备课本', children: [{ label: '周计划', key: 'weekly-plan' }, { label: '我的教案', key: 'my-lessons' }] },
+  { label: '其他功能', children: [{ label: '设置', key: 'settings' }, { label: '统计', key: 'statistics' }] },
 ]
 
 const openedGroups = ref(new Set(groups.map((group) => group.label)))
@@ -42,11 +47,12 @@ const toggleGroup = (label) => {
         <div v-show="openedGroups.has(group.label)" class="nav-children">
           <button
             v-for="item in group.children"
-            :key="item"
-            :class="{ active: item === '案例教研' }"
+            :key="item.key"
+            :class="{ active: activeKey === item.key }"
+            @click="emit('navigate', item.key)"
           >
             <span class="nav-child-line"></span>
-            <span>{{ item }}</span>
+            <span>{{ item.label }}</span>
           </button>
         </div>
       </div>

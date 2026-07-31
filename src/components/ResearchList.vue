@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import {
   Search, Plus, Download, MoreFilled, ChatDotRound, User, Clock,
-  ArrowRight, DocumentChecked, EditPen, VideoPlay, CircleCheck
+  ArrowRight, EditPen, VideoPlay, CircleCheck
 } from '@element-plus/icons-vue'
 import StageTrack from './StageTrack.vue'
 
@@ -10,7 +10,7 @@ const props = defineProps({
   items: { type: Array, required: true },
   role: { type: String, default: '管理视角' },
 })
-const emit = defineEmits(['create', 'open', 'edit'])
+const emit = defineEmits(['create', 'open', 'edit', 'update-role'])
 const search = ref('')
 const status = ref('全部状态')
 const semester = ref('2025-2026学年度下学期')
@@ -30,8 +30,8 @@ const filteredItems = computed(() => visibleItems.value.filter((item) => {
 const allSummaries = [
   { label: '草稿主题', value: 6, note: '仅创建人和管理者可见', icon: EditPen, tone: 'blue' },
   { label: '正在研讨', value: 3, note: '今天新增 12 条回复', icon: ChatDotRound, tone: 'teal' },
-  { label: '待召开 / 现场记录', value: 5, note: '本周有 2 场教研', icon: VideoPlay, tone: 'amber' },
-  { label: '本学期已完成', value: 24, note: '已形成 18 份报告', icon: CircleCheck, tone: 'green' },
+  { label: '现场记录', value: 5, note: '2 场会议待整理资料', icon: VideoPlay, tone: 'amber' },
+  { label: '本学期已完成', value: 24, note: '已形成 18 个归档包', icon: CircleCheck, tone: 'green' },
 ]
 const summaries = computed(() => (
   props.role === '管理视角'
@@ -40,14 +40,19 @@ const summaries = computed(() => (
 ))
 const statusOptions = computed(() => (
   props.role === '管理视角'
-    ? ['全部状态', '草稿', '研讨中', '待召开', '现场记录', '待总结', '已完成']
-    : ['全部状态', '研讨中', '待召开', '现场记录', '待总结', '已完成']
+    ? ['全部状态', '草稿', '研讨中', '现场记录', '待总结', '已完成']
+    : ['全部状态', '研讨中', '现场记录', '待总结', '已完成']
 ))
+const mobileStatusOptions = [
+  { label: '全部', value: '全部状态' },
+  { label: '研讨中', value: '研讨中' },
+  { label: '待总结', value: '待总结' },
+  { label: '已完成', value: '已完成' },
+]
 
 const tagType = (itemStatus) => ({
   '研讨中': 'success',
   '草稿': undefined,
-  '待召开': 'warning',
   '现场记录': 'warning',
   '待总结': 'danger',
   '已完成': 'info',
@@ -56,11 +61,27 @@ const tagType = (itemStatus) => ({
 
 <template>
   <section class="page">
+    <div class="mobile-research-controls">
+      <div class="mobile-role-switch" aria-label="切换手机端使用视角">
+        <button :class="{ active: role === '管理视角' }" @click="emit('update-role', '管理视角')">管理视角</button>
+        <button :class="{ active: role === '教师视角' }" @click="emit('update-role', '教师视角')">教师视角</button>
+      </div>
+      <el-input v-model="search" :prefix-icon="Search" clearable placeholder="搜索教研主题" class="mobile-research-search" />
+      <div class="mobile-status-tabs">
+        <button
+          v-for="item in mobileStatusOptions"
+          :key="item.value"
+          :class="{ active: status === item.value }"
+          @click="status = item.value"
+        >{{ item.label }}</button>
+      </div>
+    </div>
+
     <header class="page-heading">
       <div>
         <div class="crumb">园本教研 / 案例教研</div>
         <h1>案例教研</h1>
-        <p>围绕真实案例，完成准备、在线研讨、现场教研与成果沉淀。</p>
+        <p>围绕真实案例，完成教研准备、在线研讨、现场记录与成果沉淀。</p>
       </div>
       <div v-if="role === '管理视角'" class="heading-actions">
         <el-button :icon="Download">批量下载</el-button>
@@ -83,6 +104,10 @@ const tagType = (itemStatus) => ({
     </div>
 
     <div class="list-panel">
+      <div class="mobile-list-heading">
+        <div><h2>我的教研</h2><span>共 {{ filteredItems.length }} 个主题</span></div>
+        <el-button v-if="role === '管理视角'" type="primary" :icon="Plus" @click="emit('create')">创建教研</el-button>
+      </div>
       <div class="toolbar">
         <div class="toolbar-left">
           <el-select v-model="semester" class="semester-select">
@@ -108,8 +133,11 @@ const tagType = (itemStatus) => ({
           @click="item.status === '草稿' ? emit('edit', item) : emit('open', item)"
         >
           <div class="topic-cell">
-            <div class="topic-icon"><el-icon><DocumentChecked /></el-icon></div>
-            <div>
+            <div class="topic-cover">
+              <img :src="item.cover || '/covers/sand-water.svg'" :alt="`${item.title}案例封面`" />
+              <span>{{ item.caseCount || 1 }} 个案例</span>
+            </div>
+            <div class="topic-content">
               <div class="topic-title">{{ item.title }}</div>
               <div class="topic-meta">
                 <el-tag size="small" effect="plain">{{ item.scope }}</el-tag>
@@ -120,6 +148,11 @@ const tagType = (itemStatus) => ({
           <div class="stage-cell">
             <div class="status-line"><el-tag :type="tagType(item.status)" effect="light">{{ item.status }}</el-tag><b>{{ item.progress }}%</b></div>
             <StageTrack :current="item.stage" :completed="item.status === '已完成'" compact />
+            <div class="mobile-card-progress">
+              <span>当前阶段：<b>{{ item.status }}</b></span>
+              <el-progress :percentage="item.progress" :stroke-width="6" :show-text="false" />
+              <em>{{ item.progress }}%</em>
+            </div>
           </div>
           <div class="activity-cell">
             <span><el-icon><User /></el-icon>{{ item.participants }} 人</span>

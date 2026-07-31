@@ -1,18 +1,22 @@
 <script setup>
+import { computed } from 'vue'
 import { Check } from '@element-plus/icons-vue'
 import { stages } from '../data/research'
 
-defineProps({
+const props = defineProps({
   current: { type: Number, default: 1 },
   compact: { type: Boolean, default: false },
   completed: { type: Boolean, default: false },
+  items: { type: Array, default: null },
 })
+
+const displayStages = computed(() => props.items || stages)
 </script>
 
 <template>
   <div class="stage-track" :class="{ compact }">
     <div
-      v-for="(stage, index) in stages"
+      v-for="(stage, index) in displayStages"
       :key="stage"
       class="stage-node"
       :class="{ done: completed || index + 1 < current, current: !completed && index + 1 === current }"
