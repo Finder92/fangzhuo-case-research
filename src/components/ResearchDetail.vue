@@ -91,6 +91,7 @@ const preparationFileGroups = computed(() => ([
   ...group,
   files: preparationFiles.filter((file) => file.category === group.key),
 })).filter((group) => group.files.length)))
+const audioWave = [20, 34, 25, 48, 30, 58, 38, 24, 46, 68, 40, 30, 54, 37, 62, 28, 44, 34, 56, 42, 24, 50, 32, 45, 25, 38, 56, 30, 43, 22, 36, 51]
 const caseResults = reactive([
   {
     id: 1,
@@ -880,38 +881,39 @@ const confirmRecord = () => {
 
     <el-empty v-else description="18 位教师已加入本次教研" />
 
-    <el-dialog v-model="filePreviewVisible" width="720px" class="preparation-preview-dialog">
+    <el-dialog v-model="filePreviewVisible" width="920px" top="5vh" class="preparation-preview-dialog">
       <template #header>
         <div class="preview-dialog-title">
-          <span><el-icon><component :is="previewFile?.icon || Document" /></el-icon></span>
-          <div><strong>{{ previewFile?.name }}</strong><small>{{ previewFile?.extension }} · {{ previewFile?.size }} · {{ previewFile?.source }}</small></div>
+          <span class="preview-file-mark"><el-icon><component :is="previewFile?.icon || Document" /></el-icon></span>
+          <div><small>教研准备 / {{ previewFile?.source }}</small><strong>{{ previewFile?.name }}</strong></div>
+          <el-tag effect="plain">{{ previewFile?.extension }}</el-tag>
         </div>
       </template>
       <div v-if="previewFile" class="preparation-preview-body">
+        <div class="preview-toolbar">
+          <span>{{ previewFile.size }} · 上传于 2026-08-02</span>
+          <span>准备素材 · 仅供本次教研参与人查看</span>
+        </div>
         <div v-if="previewFile.category === 'video'" class="media-preview video-preview">
           <img :src="previewCover" alt="沙水游戏观察视频封面" />
-          <div><span class="preview-play">▶</span><strong>视频预览（演示）</strong><small>00:00 / 03:42</small></div>
+          <div class="video-center-control"><span class="preview-play">▶</span><strong>沙水游戏连续观察</strong><small>关键片段 · 03:42</small></div>
+          <div class="video-control-bar"><span>00:00</span><i><b></b></i><span>03:42</span><el-icon><VideoCamera /></el-icon><el-icon><MoreFilled /></el-icon></div>
         </div>
         <div v-else-if="previewFile.category === 'image'" class="media-preview image-preview">
           <img :src="previewCover" alt="沙水区沟渠现场照片" />
-          <span>图片预览（演示）</span>
+          <div class="image-caption"><strong>沙水区沟渠现场照片</strong><span>观察区域 · 小六班 · 2026-07-28</span></div>
         </div>
         <div v-else-if="previewFile.category === 'audio'" class="audio-preview">
-          <span><el-icon><Headset /></el-icon></span>
-          <div><strong>音频预览（演示）</strong><el-slider :model-value="36" :show-tooltip="false" disabled /></div>
-          <small>00:36 / 08:17</small>
+          <div class="audio-cover"><el-icon><Headset /></el-icon><span>访谈</span></div>
+          <div class="audio-content"><span class="audio-kicker">教师访谈录音</span><strong>前期教师访谈：幼儿如何理解沟渠坍塌</strong><div class="audio-wave"><i v-for="(height, index) in audioWave" :key="index" :style="{ height: `${height}px` }" :class="{ active: index < 12 }"></i></div><div class="audio-time"><span>00:36</span><span>08:17</span></div></div>
+          <button type="button" class="audio-play"><span>▶</span></button>
         </div>
         <article v-else class="document-preview">
-          <div class="document-preview-paper">
-            <span class="document-format">{{ previewFile.extension }}</span>
-            <h2>{{ previewFile.name.replace(/\.[^.]+$/, '') }}</h2>
-            <p>本文件为教研准备阶段上传的资料，供参与教师在进入研讨前回看观察事实、活动方案与引导问题。</p>
-            <h3>内容摘要</h3>
-            <ul><li>聚焦幼儿在沙水游戏中的连续探究行为。</li><li>整理关键观察片段与教师提问方向。</li><li>为在线研讨提供共同的事实依据。</li></ul>
-          </div>
+          <aside class="document-thumbnails"><span>1 / 3</span><div class="document-thumb active"><i></i><i></i><i></i><i></i></div><div class="document-thumb"><i></i><i></i><i></i></div><div class="document-thumb"><i></i><i></i></div></aside>
+          <div class="document-preview-paper"><span class="document-format">{{ previewFile.extension }}</span><p class="document-eyebrow">案例教研 · 准备材料</p><h2>{{ previewFile.name.replace(/\.[^.]+$/, '') }}</h2><p>本文件为教研准备阶段上传的资料，供参与教师在进入研讨前回看观察事实、活动方案与引导问题。</p><h3>内容摘要</h3><ul><li>聚焦幼儿在沙水游戏中的连续探究行为。</li><li>整理关键观察片段与教师提问方向。</li><li>为在线研讨提供共同的事实依据。</li></ul><footer>第 1 页</footer></div>
         </article>
       </div>
-      <template #footer><span class="preview-footer-tip">当前为演示预览模式，正式接入后可按文件类型调用在线预览服务。</span><el-button type="primary" @click="filePreviewVisible = false">关闭预览</el-button></template>
+      <template #footer><span class="preview-footer-tip">在线预览模式</span><el-button @click="filePreviewVisible = false">关闭</el-button><el-button type="primary" plain :icon="Download">下载原文件</el-button></template>
     </el-dialog>
 
     <el-dialog v-model="resultDialog" :title="resultDialogTitle" width="680px">
