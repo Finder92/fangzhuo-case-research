@@ -4,7 +4,7 @@ import {
   ArrowLeft, Plus, ChatDotRound, User, Calendar, Location, Bell,
   MoreFilled, Top, Star, Document, Promotion, CircleCheck, Clock,
   Headset, PictureFilled, UploadFilled, Tickets, MagicStick,
-  FolderOpened, Download, VideoCamera
+  FolderOpened, Download, VideoCamera, View
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import StageTrack from './StageTrack.vue'
@@ -70,7 +70,27 @@ const recordingStatus = ref(currentStage.value >= 4 ? '转写完成' : '待上�
 const recordingFileName = ref(
   currentStage.value >= 4 ? '沙水游戏专题教研现场录音.m4a' : '',
 )
+const meetingDocumentName = ref('会议讨论要点与分组记录.docx')
 const minutesStatus = ref(currentStage.value >= 4 ? '已生成' : '待生成')
+const filePreviewVisible = ref(false)
+const previewFile = ref(null)
+const previewCover = `${import.meta.env.BASE_URL}covers/sand-water.svg`
+const preparationFiles = [
+  { id: 'prepare-video', category: 'video', name: '沙水游戏连续观察片段.mp4', extension: 'MP4', size: '86.4 MB', source: '观察案例', icon: VideoCamera },
+  { id: 'prepare-document-1', category: 'document', name: '沙水游戏观察记录汇编.pdf', extension: 'PDF', size: '8.4 MB', source: '观察记录', icon: Document },
+  { id: 'prepare-document-2', category: 'document', name: '教研活动方案与提问单.docx', extension: 'DOCX', size: '1.2 MB', source: '活动方案', icon: Document },
+  { id: 'prepare-audio', category: 'audio', name: '前期教师访谈录音.m4a', extension: 'M4A', size: '18.6 MB', source: '访谈素材', icon: Headset },
+  { id: 'prepare-image', category: 'image', name: '沙水区沟渠现场照片.jpg', extension: 'JPG', size: '3.8 MB', source: '观察案例', icon: PictureFilled },
+]
+const preparationFileGroups = computed(() => ([
+  { key: 'video', label: '视频', icon: VideoCamera },
+  { key: 'document', label: '文档', icon: Document },
+  { key: 'audio', label: '音频', icon: Headset },
+  { key: 'image', label: '图片', icon: PictureFilled },
+].map((group) => ({
+  ...group,
+  files: preparationFiles.filter((file) => file.category === group.key),
+})).filter((group) => group.files.length)))
 const caseResults = reactive([
   {
     id: 1,
@@ -183,7 +203,7 @@ const resultStatusType = (status) => ({
 const stageHint = computed(() => ({
   1: ['教研主题尚未发布', '完善主题、活动方案与参与设置后，即可发布在线研讨。'],
   2: ['在线研讨正在进行', '线上讨论与线下会议均归在本阶段；会议结束后进入现场记录。'],
-  3: ['请完善现场记录', '上传会议资料和录音，转写完成后由 AI 生成可编辑的 Markdown 会议纪要。'],
+  3: ['请完善现场记录', '上传录音、会议文档、现场照片与视频；录音转写完成后可由 AI 生成可编辑的 Markdown 会议纪要。'],
   4: ['进入成果沉淀', '先形成案例小结和整次教研总结，最后生成本次会议资料归档包。'],
 }[currentStage.value]))
 
@@ -337,7 +357,7 @@ const addReply = () => {
 
 const enterRecordStage = () => {
   ElMessageBox.confirm(
-    '线下会议结束后将进入“现场记录”。请补充出勤和会议资料，上传录音并完成转写与 AI 会议纪要。',
+    '线下会议结束后将进入“现场记录”。请补充出勤、录音或会议文档，以及现场照片与视频；录音转写后可生成 AI 会议纪要。',
     '结束教研并整理现场资料？',
     {
       confirmButtonText: '进入现场记录',
@@ -374,7 +394,17 @@ const startTranscription = (fileName = '沙水游戏专题教研现场录音.m4a
   }, 900)
 }
 
-const handleRecording = (file) => startTranscription(file.name)
+const handleMeetingFile = (file) => {
+  const isAudio = /\.(mp3|wav|m4a|aac|ogg)$/i.test(file.name)
+  if (isAudio) return startTranscription(file.name)
+  meetingDocumentName.value = file.name
+  ElMessage.success('会议文档已添加，可与录音一并归档')
+}
+
+const openPreparationPreview = (file) => {
+  previewFile.value = file
+  filePreviewVisible.value = true
+}
 
 const generateMinutes = () => {
   if (recordingStatus.value !== '转写完成') {
@@ -548,6 +578,36 @@ const confirmRecord = () => {
           <li>现场共研：形成可验证的支持策略。</li>
           <li>实践回访：记录策略实施效果并完成小结。</li>
         </ol>
+        <section class="preparation-files">
+          <div class="preparation-files-head">
+            <div>
+              <h2>准备阶段上传的文件</h2>
+              <p>发布教研主题前上传的素材已按文件格式归类，支持前端预览。</p>
+            </div>
+            <el-tag type="info" effect="plain">{{ preparationFiles.length }} 个文件</el-tag>
+          </div>
+          <div class="preparation-file-groups">
+            <section v-for="group in preparationFileGroups" :key="group.key" class="preparation-file-group">
+              <header>
+                <span><el-icon><component :is="group.icon" /></el-icon></span>
+                <div><strong>{{ group.label }}</strong><small>{{ group.files.length }} 个文件</small></div>
+              </header>
+              <button
+                v-for="file in group.files"
+                :key="file.id"
+                type="button"
+                class="preparation-file-row"
+                @click="openPreparationPreview(file)"
+              >
+                <span class="preparation-file-meta">
+                  <b>{{ file.name }}</b>
+                  <small>{{ file.extension }} · {{ file.size }} · {{ file.source }}</small>
+                </span>
+                <span class="preparation-preview-action"><el-icon><View /></el-icon>预览</span>
+              </button>
+            </section>
+          </div>
+        </section>
       </div>
       <div class="overview-side">
         <h3>关联案例</h3>
@@ -573,12 +633,13 @@ const confirmRecord = () => {
             <article class="record-file-card">
               <span class="record-file-icon audio"><el-icon><Headset /></el-icon></span>
               <div class="record-file-main">
-                <div><strong>现场录音</strong><el-tag :type="recordingType" size="small">{{ recordingStatus }}</el-tag></div>
+                <div><strong>上传录音及文档</strong><el-tag :type="recordingType" size="small">{{ recordingStatus }}</el-tag></div>
                 <p v-if="recordingFileName">{{ recordingFileName }} · 46:28</p>
-                <p v-else>支持 MP3、WAV、M4A，单个文件不超过 500MB</p>
+                <p v-else>支持 MP3、WAV、M4A 及 PDF、Word 等会议文档，单个文件不超过 500MB</p>
+                <p v-if="meetingDocumentName" class="meeting-document-name">已添加文档：{{ meetingDocumentName }}</p>
                 <div class="record-file-actions">
-                  <el-upload action="#" :auto-upload="false" :show-file-list="false" accept="audio/*,.mp3,.wav,.m4a" :on-change="handleRecording">
-                    <el-button :icon="UploadFilled">选择录音文件</el-button>
+                  <el-upload action="#" :auto-upload="false" :show-file-list="false" accept="audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx" :on-change="handleMeetingFile">
+                    <el-button :icon="UploadFilled">选择录音或文档</el-button>
                   </el-upload>
                   <el-button plain @click="startTranscription()">使用演示录音</el-button>
                 </div>
@@ -588,8 +649,8 @@ const confirmRecord = () => {
             <article class="record-file-card">
               <span class="record-file-icon photo"><el-icon><PictureFilled /></el-icon></span>
               <div class="record-file-main">
-                <div><strong>现场照片与附件</strong><el-tag type="info" size="small">已上传 6 项</el-tag></div>
-                <p>用于补充空间布置、教师分组、观点板书等现场证据。</p>
+                <div><strong>现场照片与视频</strong><el-tag type="info" size="small">已上传 6 项</el-tag></div>
+                <p>用于补充空间布置、教师分组、观点板书等现场影像证据。</p>
                 <el-upload action="#" :auto-upload="false" multiple><el-button :icon="UploadFilled">继续上传</el-button></el-upload>
               </div>
             </article>
@@ -654,8 +715,8 @@ const confirmRecord = () => {
           <h3>归档检查</h3>
           <ul class="record-checks">
             <li class="done"><el-icon><CircleCheck /></el-icon><span>实际时间与出勤</span></li>
-            <li :class="{ done: recordingStatus === '转写完成' }"><el-icon><CircleCheck /></el-icon><span>录音与转写稿（可选）</span></li>
-            <li class="done"><el-icon><CircleCheck /></el-icon><span>现场照片与附件</span></li>
+            <li :class="{ done: recordingStatus === '转写完成' || meetingDocumentName }"><el-icon><CircleCheck /></el-icon><span>录音、文档与转写稿（可选）</span></li>
+            <li class="done"><el-icon><CircleCheck /></el-icon><span>现场照片与视频</span></li>
             <li :class="{ done: minutesStatus === '已生成' }"><el-icon><CircleCheck /></el-icon><span>AI 会议纪要（Markdown）</span></li>
           </ul>
         </div>
@@ -818,6 +879,40 @@ const confirmRecord = () => {
     </div>
 
     <el-empty v-else description="18 位教师已加入本次教研" />
+
+    <el-dialog v-model="filePreviewVisible" width="720px" class="preparation-preview-dialog">
+      <template #header>
+        <div class="preview-dialog-title">
+          <span><el-icon><component :is="previewFile?.icon || Document" /></el-icon></span>
+          <div><strong>{{ previewFile?.name }}</strong><small>{{ previewFile?.extension }} · {{ previewFile?.size }} · {{ previewFile?.source }}</small></div>
+        </div>
+      </template>
+      <div v-if="previewFile" class="preparation-preview-body">
+        <div v-if="previewFile.category === 'video'" class="media-preview video-preview">
+          <img :src="previewCover" alt="沙水游戏观察视频封面" />
+          <div><span class="preview-play">▶</span><strong>视频预览（演示）</strong><small>00:00 / 03:42</small></div>
+        </div>
+        <div v-else-if="previewFile.category === 'image'" class="media-preview image-preview">
+          <img :src="previewCover" alt="沙水区沟渠现场照片" />
+          <span>图片预览（演示）</span>
+        </div>
+        <div v-else-if="previewFile.category === 'audio'" class="audio-preview">
+          <span><el-icon><Headset /></el-icon></span>
+          <div><strong>音频预览（演示）</strong><el-slider :model-value="36" :show-tooltip="false" disabled /></div>
+          <small>00:36 / 08:17</small>
+        </div>
+        <article v-else class="document-preview">
+          <div class="document-preview-paper">
+            <span class="document-format">{{ previewFile.extension }}</span>
+            <h2>{{ previewFile.name.replace(/\.[^.]+$/, '') }}</h2>
+            <p>本文件为教研准备阶段上传的资料，供参与教师在进入研讨前回看观察事实、活动方案与引导问题。</p>
+            <h3>内容摘要</h3>
+            <ul><li>聚焦幼儿在沙水游戏中的连续探究行为。</li><li>整理关键观察片段与教师提问方向。</li><li>为在线研讨提供共同的事实依据。</li></ul>
+          </div>
+        </article>
+      </div>
+      <template #footer><span class="preview-footer-tip">当前为演示预览模式，正式接入后可按文件类型调用在线预览服务。</span><el-button type="primary" @click="filePreviewVisible = false">关闭预览</el-button></template>
+    </el-dialog>
 
     <el-dialog v-model="resultDialog" :title="resultDialogTitle" width="680px">
       <div class="markdown-editor-label"><span>Markdown 内容</span><small>{{ role === '教师视角' ? '只读查看' : '支持编辑后保存' }}</small></div>
