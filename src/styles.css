@@ -362,19 +362,22 @@ button { cursor: pointer; }
 .preparation-files-head h2 { margin-bottom: 5px; }
 .preparation-files-head p { margin: 0; }
 .preparation-file-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 15px; }
-.preparation-file-group { overflow: hidden; border: 1px solid #e3eaf2; border-radius: 10px; background: #fafcff; }
-.preparation-file-group header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #e8eef5; background: #f4f8fd; }
-.preparation-file-group header > span { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; color: var(--primary); background: #e8f0fb; font-size: 14px; }
+.preparation-file-group { overflow: hidden; border: 1px solid #e1e8f0; border-radius: 12px; background: #fff; box-shadow: 0 5px 13px rgba(45, 74, 111, .035); }
+.preparation-file-group header { display: flex; align-items: center; gap: 9px; padding: 11px 13px; border-bottom: 1px solid #e9eef4; background: #f5f8fc; }
+.preparation-file-group header > span { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; color: #4b82c5; background: #e6f0fd; font-size: 15px; }
+.preparation-file-group.audio header > span { color: #8064bb; background: #f0ebfa; }.preparation-file-group.image header > span { color: #4a9a81; background: #e8f6f0; }.preparation-file-group.document header > span { color: #db7560; background: #fdf0ec; }
 .preparation-file-group header div { display: flex; flex-direction: column; gap: 2px; }
-.preparation-file-group header strong { color: var(--ink); font-size: 10px; }
+.preparation-file-group header strong { color: var(--ink); font-size: 11px; }
 .preparation-file-group header small { color: var(--muted); font-size: 8px; }
-.preparation-file-row { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border: 0; border-bottom: 1px solid #eef2f6; color: inherit; text-align: left; background: #fff; cursor: pointer; transition: background .2s; }
+.preparation-file-row { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 62px; padding: 9px 13px; border: 0; border-bottom: 1px solid #eef2f6; color: inherit; text-align: left; background: #fff; cursor: pointer; transition: background .2s, padding .2s; }
 .preparation-file-row:last-child { border-bottom: 0; }
-.preparation-file-row:hover { background: #f3f8ff; }
+.preparation-file-row:hover { padding-right: 10px; background: #f6faff; }
+.preparation-file-cover { width: 38px; height: 42px; position: relative; flex: 0 0 38px; overflow: hidden; display: grid; place-items: center; border-radius: 7px; color: #d86655; background: #fff0eb; font-size: 18px; }
+.preparation-file-cover.audio { color: #8064bb; background: #f1ecfa; }.preparation-file-cover.video, .preparation-file-cover.image { color: #fff; background: #345b7f; }.preparation-file-cover img { width: 100%; height: 100%; object-fit: cover; opacity: .8; }.preparation-file-cover em { position: absolute; right: 3px; bottom: 3px; padding: 1px 3px; border-radius: 2px; color: #fff; font-size: 6px; font-style: normal; background: rgba(22, 42, 63, .76); }
 .preparation-file-meta { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-.preparation-file-meta b { overflow: hidden; color: #4f5f74; font-size: 9px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.preparation-file-meta small { color: #98a5b5; font-size: 8px; }
-.preparation-preview-action { display: inline-flex; align-items: center; gap: 3px; flex: 0 0 auto; color: var(--primary); font-size: 8px; }
+.preparation-file-meta b { overflow: hidden; color: #405169; font-size: 10px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.preparation-file-meta small { color: #94a1b2; font-size: 8px; }
+.preparation-preview-action { display: inline-flex; align-items: center; gap: 3px; flex: 0 0 auto; color: #4d83c4; font-size: 9px; }
 .preparation-preview-dialog .el-dialog { overflow: hidden; border-radius: 14px; }
 .preparation-preview-dialog .el-dialog__header { margin-right: 0; padding: 19px 24px 16px; border-bottom: 1px solid #e9edf2; }
 .preparation-preview-dialog .el-dialog__body { padding: 0; }

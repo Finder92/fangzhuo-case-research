@@ -588,7 +588,7 @@ const confirmRecord = () => {
             <el-tag type="info" effect="plain">{{ preparationFiles.length }} 个文件</el-tag>
           </div>
           <div class="preparation-file-groups">
-            <section v-for="group in preparationFileGroups" :key="group.key" class="preparation-file-group">
+            <section v-for="group in preparationFileGroups" :key="group.key" class="preparation-file-group" :class="group.key">
               <header>
                 <span><el-icon><component :is="group.icon" /></el-icon></span>
                 <div><strong>{{ group.label }}</strong><small>{{ group.files.length }} 个文件</small></div>
@@ -600,6 +600,11 @@ const confirmRecord = () => {
                 class="preparation-file-row"
                 @click="openPreparationPreview(file)"
               >
+                <span class="preparation-file-cover" :class="file.category">
+                  <img v-if="file.category === 'video' || file.category === 'image'" :src="previewCover" alt="" />
+                  <el-icon v-else><component :is="file.icon" /></el-icon>
+                  <em>{{ file.extension }}</em>
+                </span>
                 <span class="preparation-file-meta">
                   <b>{{ file.name }}</b>
                   <small>{{ file.extension }} · {{ file.size }} · {{ file.source }}</small>
