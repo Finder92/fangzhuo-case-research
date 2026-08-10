@@ -6,7 +6,6 @@ import {
   Picture, Refresh, VideoCamera, Headset, View
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import StageTrack from './StageTrack.vue'
 
 const props = defineProps({
   draft: { type: Object, default: null },
@@ -215,7 +214,28 @@ const publish = () => {
       </div>
     </header>
 
-    <div class="editor-stage"><StageTrack :current="1" /></div>
+    <div class="editor-stage editor-parallel-stage" aria-label="教研并行推进流程">
+      <div class="editor-flow-node is-current">
+        <span class="editor-flow-index">01</span>
+        <div><strong>教研准备</strong><small>完善主题、方案与成员</small></div>
+      </div>
+      <div class="editor-flow-split" aria-hidden="true"></div>
+      <div class="editor-flow-branches">
+        <div class="editor-flow-node is-pending">
+          <span class="editor-flow-index">02A</span>
+          <div><strong>教研记录</strong><small>发布后持续开放</small></div>
+        </div>
+        <div class="editor-flow-node is-pending">
+          <span class="editor-flow-index">02B</span>
+          <div><strong>现场记录</strong><small>会议资料随时补充</small></div>
+        </div>
+      </div>
+      <div class="editor-flow-merge" aria-hidden="true"></div>
+      <div class="editor-flow-node is-pending">
+        <span class="editor-flow-index">03</span>
+        <div><strong>成果沉淀</strong><small>汇总纪要、小结与总结</small></div>
+      </div>
+    </div>
 
     <div class="editor-layout">
       <aside class="editor-nav">

@@ -4,7 +4,6 @@ import {
   Search, Plus, Download, MoreFilled, ChatDotRound, User, Clock,
   ArrowRight, EditPen, VideoPlay, CircleCheck
 } from '@element-plus/icons-vue'
-import StageTrack from './StageTrack.vue'
 
 const props = defineProps({
   items: { type: Array, required: true },
@@ -58,6 +57,11 @@ const tagType = (itemStatus) => ({
   '待总结': 'danger',
   '已完成': 'info',
 }[itemStatus])
+
+const isPrepared = (item) => item.status !== '草稿'
+const hasResearchRecord = (item) => item.status !== '草稿'
+const hasOnsiteRecord = (item) => ['现场记录', '待总结', '已完成'].includes(item.status) || item.stage >= 3
+const hasResults = (item) => item.status === '已完成' || item.stage >= 4
 </script>
 
 <template>
@@ -125,7 +129,7 @@ const tagType = (itemStatus) => ({
 
       <div class="research-table">
         <div class="table-head">
-          <span>教研主题</span><span>当前阶段</span><span>参与情况</span><span>计划时间</span><span>最近更新</span><span>操作</span>
+          <span>教研主题</span><span>推进状态</span><span>参与情况</span><span>计划时间</span><span>最近更新</span><span>操作</span>
         </div>
         <article
           v-for="item in filteredItems"
@@ -148,7 +152,22 @@ const tagType = (itemStatus) => ({
           </div>
           <div class="stage-cell">
             <div class="status-line"><el-tag :type="tagType(item.status)" effect="light">{{ item.status }}</el-tag><b>{{ item.progress }}%</b></div>
-            <StageTrack :current="item.stage" :completed="item.status === '已完成'" compact />
+            <div class="parallel-status-mini" title="教研记录与现场记录可并行推进">
+              <div class="parallel-mini-node" :class="{ done: isPrepared(item) }">
+                <i>{{ isPrepared(item) ? '✓' : '1' }}</i><span>准备</span>
+              </div>
+              <div class="parallel-mini-branches">
+                <div class="parallel-mini-node" :class="{ done: hasResearchRecord(item) }">
+                  <i>{{ hasResearchRecord(item) ? '✓' : 'A' }}</i><span>教研记录</span>
+                </div>
+                <div class="parallel-mini-node" :class="{ done: hasOnsiteRecord(item) }">
+                  <i>{{ hasOnsiteRecord(item) ? '✓' : 'B' }}</i><span>现场记录</span>
+                </div>
+              </div>
+              <div class="parallel-mini-node" :class="{ done: hasResults(item) }">
+                <i>{{ hasResults(item) ? '✓' : '3' }}</i><span>成果</span>
+              </div>
+            </div>
             <div class="mobile-card-progress">
               <span>当前阶段：<b>{{ item.status }}</b></span>
               <el-progress :percentage="item.progress" :stroke-width="6" :show-text="false" />

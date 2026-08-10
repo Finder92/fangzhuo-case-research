@@ -153,6 +153,33 @@ button { cursor: pointer; }
 .autosave { color: #8591a2; font-size: 11px; margin-right: 7px; display: flex; align-items: center; gap: 6px; }
 .autosave i { width: 6px; height: 6px; border-radius: 50%; background: #58b479; }
 .editor-stage { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 17px 12%; margin-bottom: 18px; }
+.editor-parallel-stage { display: grid; grid-template-columns: minmax(160px, .9fr) 36px minmax(330px, 1.7fr) 36px minmax(170px, .9fr); align-items: center; padding: 18px 7%; background: linear-gradient(90deg, #fff 0%, #f9fbff 52%, #fff 100%); }
+.editor-flow-node { position: relative; z-index: 1; display: flex; align-items: center; gap: 9px; min-width: 0; }
+.editor-flow-node > div { min-width: 0; display: grid; gap: 3px; }
+.editor-flow-node strong { color: #40516b; font-size: 13px; font-weight: 650; white-space: nowrap; }
+.editor-flow-node small { color: #94a0b1; font-size: 10px; white-space: nowrap; }
+.editor-flow-index { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 28px; height: 28px; border: 1px solid #ced9e9; border-radius: 50%; color: #9aa8ba; background: #fff; font-size: 9px; font-weight: 700; }
+.editor-flow-node.is-current .editor-flow-index { color: #fff; background: var(--primary); border-color: var(--primary); box-shadow: 0 0 0 4px #eaf2ff; }
+.editor-flow-node.is-current strong { color: var(--primary-dark); }
+.editor-flow-split, .editor-flow-merge { height: 1px; background: #dbe5f2; position: relative; }
+.editor-flow-split::after, .editor-flow-merge::before { content: ''; position: absolute; top: -8px; width: 1px; height: 17px; background: #dbe5f2; }
+.editor-flow-split::after { right: 0; }
+.editor-flow-merge::before { left: 0; }
+.editor-flow-branches { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; position: relative; padding: 11px 0; }
+.editor-flow-branches::before, .editor-flow-branches::after { content: ''; position: absolute; left: 0; right: 0; height: 1px; background: #dbe5f2; }
+.editor-flow-branches::before { top: 0; }
+.editor-flow-branches::after { bottom: 0; }
+.editor-flow-branches .editor-flow-node { padding: 0 9px; }
+
+.parallel-status-mini { display: grid; grid-template-columns: 38px minmax(126px, 1fr) 34px; align-items: center; gap: 8px; min-height: 42px; }
+.parallel-mini-node { display: grid; justify-items: center; gap: 3px; color: #a2afbf; font-size: 8px; line-height: 1; white-space: nowrap; position: relative; }
+.parallel-mini-node i { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border: 1px solid #d4dfed; border-radius: 50%; background: #fff; color: #9eadbf; font-style: normal; font-size: 8px; font-weight: 700; }
+.parallel-mini-node.done { color: #4c78c3; font-weight: 600; }
+.parallel-mini-node.done i { color: #fff; background: #5a8ee9; border-color: #5a8ee9; }
+.parallel-mini-branches { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; position: relative; padding: 3px 0; }
+.parallel-status-mini > .parallel-mini-node:first-child::after, .parallel-status-mini > .parallel-mini-node:last-child::before { content: ''; position: absolute; top: 7px; height: 1px; width: 18px; background: #d9e3f1; }
+.parallel-status-mini > .parallel-mini-node:first-child::after { left: calc(100% + 1px); }
+.parallel-status-mini > .parallel-mini-node:last-child::before { right: calc(100% + 1px); }
 .editor-layout { display: grid; grid-template-columns: 210px minmax(580px, 1fr) 250px; align-items: start; gap: 18px; }
 .editor-nav, .form-panel, .context-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
 .editor-nav { padding: 10px; position: sticky; top: 86px; }
@@ -671,7 +698,7 @@ button { cursor: pointer; }
   .topic-meta { align-items: flex-start; flex-direction: column; gap: 5px; margin-top: 6px; }
   .topic-meta .el-tag { height: 19px; }
   .stage-cell { padding: 10px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-  .stage-cell > .status-line, .stage-cell > .stage-track { display: none; }
+  .stage-cell > .status-line, .stage-cell > .stage-track, .stage-cell > .parallel-status-mini { display: none; }
   .mobile-card-progress { display: grid; grid-template-columns: auto minmax(80px, 1fr) 30px; align-items: center; gap: 8px; }
   .mobile-card-progress > span { color: #7d8999; font-size: 9px; }
   .mobile-card-progress > span b { color: var(--primary-dark); font-weight: 600; }
