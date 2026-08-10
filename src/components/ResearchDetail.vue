@@ -476,12 +476,14 @@ const confirmRecord = () => {
     </header>
 
     <div class="detail-stage-card">
-      <StageTrack
-        :current="stageTrackCurrent"
-        :items="stageTrackItems"
-        :completed="currentStatus === '已完成'"
-        @select="switchStageModule"
-      />
+      <div class="parallel-flow" aria-label="教研并行流程">
+        <button class="flow-node flow-theme" :class="{ active: activeTab === '教研主题' }" @click="switchStageModule('教研主题')"><span>01</span><div><strong>教研主题</strong><small>发布并开放参与</small></div></button>
+        <div class="flow-fork">
+          <button class="flow-node flow-record" :class="{ active: activeTab === '教研记录' }" @click="switchStageModule('教研记录')"><span>02A</span><div><strong>教研记录</strong><small>{{ topics.length }} 个话题 · 持续开放</small></div></button>
+          <button v-if="role === '管理视角'" class="flow-node flow-site" :class="{ active: activeTab === '现场记录' }" @click="switchStageModule('现场记录')"><span>02B</span><div><strong>现场记录</strong><small>资料、出勤与转写</small></div></button>
+        </div>
+        <button class="flow-node flow-result" :class="{ active: activeTab === '成果文件' }" @click="switchStageModule('成果文件')"><span>03</span><div><strong>成果沉淀</strong><small>纪要、总结、评价与归档</small></div></button>
+      </div>
       <div class="stage-hint">
         <el-icon><Clock /></el-icon>
         <div><strong>{{ stageHint[0] }}</strong><span>{{ stageHint[1] }}</span></div>
