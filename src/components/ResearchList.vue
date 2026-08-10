@@ -152,7 +152,7 @@ const hasResults = (item) => item.status === '已完成' || item.stage >= 4
           </div>
           <div class="stage-cell">
             <div class="status-line"><el-tag :type="tagType(item.status)" effect="light">{{ item.status }}</el-tag><b>{{ item.progress }}%</b></div>
-            <div class="parallel-status-mini" title="教研记录与现场记录可并行推进">
+            <div class="parallel-status-mini" title="话题广场与现场记录可并行推进">
               <svg class="parallel-mini-arcs" viewBox="0 0 240 58" preserveAspectRatio="none" aria-hidden="true">
                 <path d="M 22 29 C 47 29, 52 13, 87 13" />
                 <path d="M 22 29 C 47 29, 52 45, 87 45" />
@@ -163,7 +163,7 @@ const hasResults = (item) => item.status === '已完成' || item.stage >= 4
                 <i>{{ isPrepared(item) ? '✓' : '1' }}</i><span>准备</span>
               </div>
               <div class="parallel-mini-node" :class="{ done: hasResearchRecord(item) }">
-                <i>{{ hasResearchRecord(item) ? '✓' : 'A' }}</i><span>教研记录</span>
+                <i>{{ hasResearchRecord(item) ? '✓' : 'A' }}</i><span>话题广场</span>
               </div>
               <div class="parallel-mini-node" :class="{ done: hasOnsiteRecord(item) }">
                 <i>{{ hasOnsiteRecord(item) ? '✓' : 'B' }}</i><span>现场记录</span>

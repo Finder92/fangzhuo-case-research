@@ -223,7 +223,7 @@ const publish = () => {
       <div class="editor-flow-branches">
         <div class="editor-flow-node is-pending">
           <span class="editor-flow-index">02A</span>
-          <div><strong>教研记录</strong><small>发布后持续开放</small></div>
+          <div><strong>话题广场</strong><small>发布后持续开放</small></div>
         </div>
         <div class="editor-flow-node is-pending">
           <span class="editor-flow-index">02B</span>

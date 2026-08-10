@@ -21,7 +21,7 @@ const currentStatus = ref(props.item.status)
 const initialTab = () => {
   if (currentStage.value >= 4) return '成果文件'
   if (props.role === '管理视角' && currentStage.value === 3) return '现场记录'
-  if (currentStage.value >= 2) return '教研记录'
+  if (currentStage.value >= 2) return '话题广场'
   return '教研主题'
 }
 const activeTab = ref(initialTab())
@@ -137,20 +137,20 @@ const tabs = computed(() => (
   props.role === '教师视角'
     ? [
         { label: '教研主题', minStage: 1 },
-        { label: '教研记录', minStage: 1 },
+        { label: '话题广场', minStage: 1 },
         { label: '成果文件', minStage: 2 },
       ]
     : [
         { label: '教研主题', minStage: 1 },
-        { label: '教研记录', minStage: 1 },
+        { label: '话题广场', minStage: 1 },
         { label: '现场记录', minStage: 1 },
         { label: '成果文件', minStage: 2 },
       ]
 ))
 const stageTrackItems = computed(() => (
   props.role === '教师视角'
-    ? ['教研主题', '教研记录', '成果文件']
-    : ['教研主题', '教研记录', '现场记录', '成果文件']
+    ? ['教研主题', '话题广场', '成果文件']
+    : ['教研主题', '话题广场', '现场记录', '成果文件']
 ))
 const stageTrackCurrent = computed(() => (
   props.role === '教师视角'
@@ -261,7 +261,7 @@ const openTeacherAction = () => {
   }
   if (teacherStatus.value === '未加入') return joinResearch()
   if (currentStage.value <= 2) {
-    activeTab.value = '教研记录'
+    activeTab.value = '话题广场'
     if (teacherStatus.value === '已加入') topicDialog.value = true
     return
   }
@@ -479,7 +479,7 @@ const confirmRecord = () => {
       <div class="parallel-flow" aria-label="教研并行流程">
         <button class="flow-node flow-theme" :class="{ active: activeTab === '教研主题' }" @click="switchStageModule('教研主题')"><span>01</span><div><strong>教研主题</strong><small>发布并开放参与</small></div></button>
         <div class="flow-fork">
-          <button class="flow-node flow-record" :class="{ active: activeTab === '教研记录' }" @click="switchStageModule('教研记录')"><span>02A</span><div><strong>教研记录</strong><small>{{ topics.length }} 个话题 · 持续开放</small></div></button>
+          <button class="flow-node flow-record" :class="{ active: activeTab === '话题广场' }" @click="switchStageModule('话题广场')"><span>02A</span><div><strong>话题广场</strong><small>{{ topics.length }} 个话题 · 持续开放</small></div></button>
           <button v-if="role === '管理视角'" class="flow-node flow-site" :class="{ active: activeTab === '现场记录' }" @click="switchStageModule('现场记录')"><span>02B</span><div><strong>现场记录</strong><small>资料、出勤与转写</small></div></button>
         </div>
         <button class="flow-node flow-result" :class="{ active: activeTab === '成果文件' }" @click="switchStageModule('成果文件')"><span>03</span><div><strong>成果沉淀</strong><small>纪要、总结、评价与归档</small></div></button>
@@ -519,11 +519,11 @@ const confirmRecord = () => {
         @click="switchTab(tab)"
       >
         {{ tab.label }}
-        <span v-if="tab.label === '教研记录'">{{ topics.length }}</span>
+        <span v-if="tab.label === '话题广场'">{{ topics.length }}</span>
       </button>
     </div>
 
-    <div v-if="activeTab === '教研记录'" class="discussion-layout">
+    <div v-if="activeTab === '话题广场'" class="discussion-layout">
       <main class="topics-panel">
         <div class="topics-head">
           <div><h2>研讨话题</h2><p>共 {{ topics.length }} 个话题、{{ totalReplies }} 条回复</p></div>
@@ -584,7 +584,7 @@ const confirmRecord = () => {
         <h2>研讨安排</h2>
         <ol>
           <li>案例回看：聚焦关键片段，描述幼儿行为事实。</li>
-          <li>教研记录：围绕介入时机与支持方式发表话题。</li>
+          <li>话题广场：围绕介入时机与支持方式发表话题。</li>
           <li>现场共研：形成可验证的支持策略。</li>
           <li>实践回访：记录策略实施效果并完成小结。</li>
         </ol>
