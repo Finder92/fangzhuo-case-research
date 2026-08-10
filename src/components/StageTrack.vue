@@ -9,6 +9,7 @@ const props = defineProps({
   completed: { type: Boolean, default: false },
   items: { type: Array, default: null },
 })
+const emit = defineEmits(['select'])
 
 const displayStages = computed(() => props.items || stages)
 </script>
@@ -18,8 +19,9 @@ const displayStages = computed(() => props.items || stages)
     <div
       v-for="(stage, index) in displayStages"
       :key="stage"
-      class="stage-node"
+      class="stage-node clickable"
       :class="{ done: completed || index + 1 < current, current: !completed && index + 1 === current }"
+      @click="emit('select', stage)"
     >
       <span class="stage-line" v-if="index"></span>
       <span class="stage-dot">

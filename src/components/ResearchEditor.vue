@@ -3,7 +3,7 @@ import { computed, reactive, ref } from 'vue'
 import {
   ArrowLeft, MagicStick, DocumentAdd, Calendar, Location, Search,
   UploadFilled, CircleCheck, InfoFilled, Plus, Delete, Lock, UserFilled,
-  Picture, Refresh
+  Picture, Refresh, VideoCamera, Headset, View
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import StageTrack from './StageTrack.vue'
@@ -14,6 +14,8 @@ const props = defineProps({
 const emit = defineEmits(['back', 'saved', 'draft-saved'])
 const activeSection = ref('基础信息')
 const generating = ref(false)
+const aiSuggestionVisible = ref(false)
+const selectedSuggestion = ref(0)
 const presetTopicDialog = ref(false)
 const memberDialog = ref(false)
 const pickerMode = ref('members')
@@ -23,9 +25,21 @@ const pendingTeacherNames = ref([])
 const pendingHost = ref('')
 const presetTopicDraft = reactive({
   title: '',
-  scope: '整场教研',
   prompt: '',
 })
+const materialPreviewVisible = ref(false)
+const activeMaterial = ref(null)
+const uploadedMaterials = ref([
+  { id: 1, type: '图片', name: '沙水区沟渠坍塌现场观察.jpg', size: '3.8 MB', cover: `${import.meta.env.BASE_URL}covers/sand-water.svg`, icon: Picture },
+  { id: 2, type: '视频', name: '幼儿修复沟渠连续观察.mp4', size: '86.4 MB', cover: `${import.meta.env.BASE_URL}covers/sand-water.svg`, icon: VideoCamera },
+  { id: 3, type: '文档', name: '沙水游戏观察记录汇编.pdf', size: '8.4 MB', icon: DocumentAdd },
+  { id: 4, type: '音频', name: '前期教师访谈录音.m4a', size: '18.6 MB', icon: Headset },
+])
+const materialGroups = computed(() => ['图片', '视频', '文档', '音频'].map((type) => ({ type, files: uploadedMaterials.value.filter((file) => file.type === type) })).filter((group) => group.files.length))
+const aiSuggestions = [
+  { title: '从“告状”到“协商”：支持幼儿在冲突中表达需求与倾听', points: ['以两段典型冲突视频为共同观察材料，先还原幼儿的语言和行为事实。', '围绕“教师何时介入、怎样支持表达”组织线上跟帖与现场共研。', '形成可直接带回班级使用的支持语句和观察记录要点。'] },
+  { title: '游戏中的“隐形支架”：教师如何从替幼儿解决转向支持协商', points: ['聚焦教师直接参与、材料投放和提问方式带来的不同结果。', '通过案例回看与教师经验对照，沉淀可验证的支持策略。', '以实践回访记录策略实施后的幼儿变化。'] },
+]
 const form = reactive({
   title: props.draft?.title || '',
   scope: props.draft?.scope || '园级教研',
@@ -145,14 +159,18 @@ const sections = [
 
 const generateContent = () => {
   generating.value = true
-  setTimeout(() => {
-    form.title = '如何支持幼儿在沙水游戏中持续、深入地解决工程问题？'
-    form.basis = '基于小六班连续三周的沙水游戏观察，幼儿多次尝试修复沟渠坍塌，但在结构加固、材料选择与同伴协作方面仍存在持续探究空间。'
-    form.arrangement = '一、案例回看：聚焦关键片段，描述幼儿行为事实。\n二、在线研讨：围绕介入时机与支持方式发表话题。\n三、现场共研：形成可验证的支持策略。\n四、实践回访：记录策略实施效果并完成小结。'
-    generating.value = false
-    ElMessage.success('已生成主题建议与活动方案')
-  }, 700)
+  setTimeout(() => { generating.value = false; aiSuggestionVisible.value = true }, 500)
 }
+const applySuggestion = (index) => {
+  const suggestion = aiSuggestions[index]
+  selectedSuggestion.value = index
+  form.title = suggestion.title
+  form.basis = '基于连续观察中幼儿表达需求、回应同伴与解决冲突的真实片段，聚焦教师支持方式与介入时机。'
+  form.arrangement = suggestion.points.map((point, itemIndex) => `${['一', '二', '三'][itemIndex]}、${point}`).join('\n\n')
+  aiSuggestionVisible.value = false
+  ElMessage.success('已应用 AI 建议，可继续编辑')
+}
+const openMaterialPreview = (file) => { activeMaterial.value = file; materialPreviewVisible.value = true }
 
 const saveDraft = () => {
   emit('draft-saved', { ...form })
@@ -164,12 +182,10 @@ const addPresetTopic = () => {
   form.preTopics.push({
     id: Date.now(),
     title: presetTopicDraft.title,
-    scope: presetTopicDraft.scope,
     prompt: presetTopicDraft.prompt || '请参与教师结合案例材料发表观点。',
   })
   presetTopicDialog.value = false
   presetTopicDraft.title = ''
-  presetTopicDraft.scope = '整场教研'
   presetTopicDraft.prompt = ''
   ElMessage.success('预设话题已添加，发布后自动进入在线研讨')
 }
@@ -226,7 +242,7 @@ const publish = () => {
           </div>
           <el-form label-position="top">
             <el-form-item label="教研主题" required>
-              <el-input v-model="form.title" maxlength="50" show-word-limit placeholder="输入一个清晰、具体、可研讨的问题" />
+              <div class="field-with-action"><el-input v-model="form.title" maxlength="50" show-word-limit placeholder="输入一个清晰、具体、可研讨的问题" /><el-button type="primary" plain :icon="MagicStick" :loading="generating" @click="generateContent">AI 生成</el-button></div>
             </el-form-item>
             <div class="two-cols">
               <el-form-item label="教研范围" required>
@@ -275,20 +291,16 @@ const publish = () => {
         </div>
 
         <div v-else-if="activeSection === '活动方案'" class="form-section">
-          <div class="section-title"><div><h2>活动方案</h2><p>安排研讨节奏，帮助参与者提前准备。</p></div><el-button plain :icon="MagicStick" @click="generateContent">生成活动方案</el-button></div>
+          <div class="section-title"><div><h2>活动方案</h2><p>安排研讨节奏，帮助参与者提前准备。</p></div></div>
           <el-form label-position="top">
             <div class="two-cols">
               <el-form-item label="研讨日期" required><el-input v-model="form.date" :prefix-icon="Calendar" /></el-form-item>
               <el-form-item label="研讨地点"><el-input v-model="form.location" :prefix-icon="Location" /></el-form-item>
             </div>
-            <el-form-item label="研讨安排" required><el-input v-model="form.arrangement" type="textarea" :rows="12" placeholder="输入教研流程、准备材料与时间安排" /></el-form-item>
+            <el-form-item label="研讨安排" required><div class="field-label-action"><span>研讨安排</span><el-button link type="primary" :icon="MagicStick" @click="generateContent">生成活动方案</el-button></div><el-input v-model="form.arrangement" type="textarea" :rows="12" placeholder="输入教研流程、准备材料与时间安排" /></el-form-item>
             <div class="material-upload">
-              <div class="upload-label"><strong>上传教研素材</strong><span>可在发布前为参与教师准备案例证据与参考材料</span></div>
-              <el-upload drag action="#" :auto-upload="false" multiple>
-                <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
-                <div>拖拽或点击上传视频、文档、音频、图片等教研素材</div>
-                <small>基本不限制文件类型，具体容量与安全校验由后台统一控制</small>
-              </el-upload>
+              <div class="upload-label"><div><strong>教研素材</strong><span>按文件类型归类，发布后供参与教师预览</span></div><el-upload action="#" :auto-upload="false" multiple><el-button type="primary" plain :icon="UploadFilled">上传教研素材</el-button></el-upload></div>
+              <div class="material-library"><section v-for="group in materialGroups" :key="group.type"><header><strong>{{ group.type }}</strong><span>{{ group.files.length }} 个</span></header><article v-for="file in group.files" :key="file.id" @click="openMaterialPreview(file)"><span class="editor-material-thumb" :class="file.type"><img v-if="file.cover" :src="file.cover" alt="" /><el-icon v-else><component :is="file.icon" /></el-icon></span><div><b>{{ file.name }}</b><small>{{ file.type }} · {{ file.size }}</small></div><el-button link type="primary" :icon="View">预览</el-button></article></section></div>
             </div>
           </el-form>
         </div>
@@ -349,7 +361,7 @@ const publish = () => {
               <div v-if="form.preTopics.length" class="preset-topic-list">
                 <article v-for="(topic, index) in form.preTopics" :key="topic.id">
                   <span>{{ String(index + 1).padStart(2, '0') }}</span>
-                  <div><strong>{{ topic.title }}</strong><small>{{ topic.scope }} · {{ topic.prompt }}</small></div>
+                  <div><strong>{{ topic.title }}</strong><small>{{ topic.prompt }}</small></div>
                   <el-button link type="danger" :icon="Delete" @click="removePresetTopic(topic.id)">删除</el-button>
                 </article>
               </div>
@@ -396,13 +408,6 @@ const publish = () => {
 
     <el-dialog v-model="presetTopicDialog" title="新增预设话题" width="560px">
       <el-form label-position="top">
-        <el-form-item label="关联范围" required>
-          <el-select v-model="presetTopicDraft.scope" style="width: 100%">
-            <el-option label="整场教研" value="整场教研" />
-            <el-option label="案例一：沙水区沟渠连续坍塌" value="案例一：沙水区沟渠连续坍塌" />
-            <el-option label="案例二：同伴协作中的材料争议" value="案例二：同伴协作中的材料争议" />
-          </el-select>
-        </el-form-item>
         <el-form-item label="话题标题" required>
           <el-input v-model="presetTopicDraft.title" maxlength="60" show-word-limit placeholder="用一个具体问题引导教师讨论" />
         </el-form-item>
@@ -414,6 +419,18 @@ const publish = () => {
         <el-button @click="presetTopicDialog = false">取消</el-button>
         <el-button type="primary" @click="addPresetTopic">添加话题</el-button>
       </template>
+    </el-dialog>
+
+    <el-dialog v-model="aiSuggestionVisible" width="1080px" top="7vh" class="ai-suggestion-dialog">
+      <template #header><div class="ai-suggestion-title"><span><el-icon><MagicStick /></el-icon></span><div><h2>AI 教研建议</h2><p>基于关联案例提炼研讨主题、目标和活动安排；选择后仍可继续编辑。</p></div></div></template>
+      <div class="ai-suggestion-layout"><aside><strong>生成依据</strong><p>2 个关联案例</p><p>3 段观察视频</p><p>12 条关键观察</p><small>已优先保留幼儿行为事实，避免空泛结论。</small></aside><main><article v-for="(suggestion, index) in aiSuggestions" :key="suggestion.title" :class="{ selected: selectedSuggestion === index }"><header><span>方案 {{ String(index + 1).padStart(2, '0') }}</span><el-button type="primary" plain @click="applySuggestion(index)">选用此方案</el-button></header><h3>{{ suggestion.title }}</h3><ol><li v-for="point in suggestion.points" :key="point">{{ point }}</li></ol></article></main></div>
+      <template #footer><el-button @click="aiSuggestionVisible = false">暂不使用</el-button></template>
+    </el-dialog>
+
+    <el-dialog v-model="materialPreviewVisible" width="720px" class="editor-material-preview">
+      <template #header><div class="preview-dialog-title"><span class="preview-file-mark"><el-icon><component :is="activeMaterial?.icon || DocumentAdd" /></el-icon></span><div><small>教研准备素材</small><strong>{{ activeMaterial?.name }}</strong></div></div></template>
+      <div class="editor-preview-content" v-if="activeMaterial"><img v-if="activeMaterial.cover" :src="activeMaterial.cover" :alt="activeMaterial.name" /><div v-else><el-icon><component :is="activeMaterial.icon" /></el-icon><strong>{{ activeMaterial.name }}</strong><span>{{ activeMaterial.type }} · {{ activeMaterial.size }}</span></div></div>
+      <template #footer><el-button type="primary" @click="materialPreviewVisible = false">关闭预览</el-button></template>
     </el-dialog>
 
     <el-dialog
