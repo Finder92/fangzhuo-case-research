@@ -236,10 +236,7 @@ const publish = () => {
 
       <main class="form-panel">
         <div v-if="activeSection === '基础信息'" class="form-section">
-          <div class="section-title">
-            <div><h2>基础信息</h2><p>明确本次教研要解决的真实问题。</p></div>
-            <el-button type="primary" plain :icon="MagicStick" :loading="generating" @click="generateContent">AI 智能生成</el-button>
-          </div>
+          <div class="section-title"><div><h2>基础信息</h2><p>明确本次教研要解决的真实问题。</p></div></div>
           <el-form label-position="top">
             <el-form-item label="教研主题" required>
               <div class="field-with-action"><el-input v-model="form.title" maxlength="50" show-word-limit placeholder="输入一个清晰、具体、可研讨的问题" /><el-button type="primary" plain :icon="MagicStick" :loading="generating" @click="generateContent">AI 生成</el-button></div>
