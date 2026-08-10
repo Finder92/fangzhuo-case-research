@@ -477,6 +477,12 @@ const confirmRecord = () => {
 
     <div class="detail-stage-card">
       <div class="parallel-flow" aria-label="教研并行流程">
+        <svg class="parallel-flow-arcs" viewBox="0 0 900 160" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M 182 80 C 244 80, 252 38, 352 38" />
+          <path d="M 182 80 C 244 80, 252 122, 352 122" />
+          <path d="M 548 38 C 648 38, 656 80, 718 80" />
+          <path d="M 548 122 C 648 122, 656 80, 718 80" />
+        </svg>
         <button class="flow-node flow-theme" :class="{ active: activeTab === '教研主题' }" @click="switchStageModule('教研主题')"><span>01</span><div><strong>教研主题</strong><small>发布并开放参与</small></div></button>
         <div class="flow-fork">
           <button class="flow-node flow-record" :class="{ active: activeTab === '话题广场' }" @click="switchStageModule('话题广场')"><span>02A</span><div><strong>话题广场</strong><small>{{ topics.length }} 个话题 · 持续开放</small></div></button>
