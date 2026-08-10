@@ -31,7 +31,6 @@ const memberDrawer = ref(false)
 const selectedTopic = ref(null)
 const topicTitle = ref('')
 const topicContent = ref('')
-const topicScope = ref('整场教研')
 const replyText = ref('')
 const topics = ref(structuredClone(seedTopics).map((topic, index) => ({
   ...topic,
@@ -334,13 +333,12 @@ const addTopic = () => {
     time: '刚刚',
     title: topicTitle.value,
     content: topicContent.value || '欢迎大家围绕这个问题发表看法。',
-    scope: topicScope.value,
+    scope: '整场教研',
     replies: [],
   })
   topicDialog.value = false
   topicTitle.value = ''
   topicContent.value = ''
-  topicScope.value = '整场教研'
   markTeacherParticipated()
   ElMessage.success('话题已发布')
 }
@@ -1004,17 +1002,6 @@ const confirmRecord = () => {
 
     <el-dialog v-model="topicDialog" title="发表研讨话题" width="560px">
       <el-form label-position="top">
-        <el-form-item label="关联范围" required>
-          <el-select v-model="topicScope" style="width: 100%">
-            <el-option label="整场教研" value="整场教研" />
-            <el-option
-              v-for="caseItem in caseResults"
-              :key="caseItem.id"
-              :label="`案例${caseItem.id}：${caseItem.title}`"
-              :value="`案例${caseItem.id}：${caseItem.title}`"
-            />
-          </el-select>
-        </el-form-item>
         <el-form-item label="话题标题" required><el-input v-model="topicTitle" maxlength="60" show-word-limit placeholder="用一个具体问题开启讨论" /></el-form-item>
         <el-form-item label="观点说明"><el-input v-model="topicContent" type="textarea" :rows="6" placeholder="补充你的观察、判断或希望大家回应的内容" /></el-form-item>
       </el-form>
