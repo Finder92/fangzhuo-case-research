@@ -27,6 +27,8 @@ const activeTab = ref(initialTab())
 const topicDialog = ref(false)
 const replyDrawer = ref(false)
 const memberDrawer = ref(false)
+const casePreviewDialog = ref(false)
+const selectedCasePreview = ref(null)
 const selectedTopic = ref(null)
 const topicTitle = ref('')
 const topicContent = ref('')
@@ -146,38 +148,6 @@ const tabs = computed(() => (
         { label: '成果文件', minStage: 2 },
       ]
 ))
-const activeSubStep = ref('')
-const subStepsByModule = {
-  '教研主题': [
-    { id: 'theme-goal', label: '教研目标' },
-    { id: 'theme-plan', label: '研讨安排' },
-    { id: 'theme-materials', label: '准备素材' },
-    { id: 'theme-cases', label: '关联案例' },
-  ],
-  '话题广场': [
-    { id: 'topic-list', label: '话题列表' },
-    { id: 'topic-activity', label: '活跃分析' },
-    { id: 'topic-guide', label: '研讨引导' },
-  ],
-  '现场记录': [
-    { id: 'record-info', label: '会议信息' },
-    { id: 'record-audio', label: '录音及文档' },
-    { id: 'record-media', label: '照片与视频' },
-    { id: 'record-confirm', label: '资料确认' },
-  ],
-  '成果文件': [
-    { id: 'result-minutes', label: '会议纪要分析' },
-    { id: 'result-summary', label: '教研总结' },
-    { id: 'result-cases', label: '案例小结' },
-    { id: 'result-review', label: 'AI 会议自评' },
-    { id: 'result-archive', label: '会议资料归档' },
-  ],
-}
-const currentSubSteps = computed(() => subStepsByModule[activeTab.value] || [])
-const scrollToSubStep = (id) => {
-  activeSubStep.value = id
-  nextTick(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
-}
 const totalReplies = computed(() => topics.value.reduce((sum, topic) => sum + topic.replies.length, 0))
 const caseCompletedCount = computed(() => caseResults.filter((item) => item.status === '已完成').length)
 const allCasesCompleted = computed(() => caseCompletedCount.value === caseResults.length)
@@ -211,7 +181,6 @@ const memberActivity = (member) => {
 const switchTab = (tab) => {
   if (currentStage.value < tab.minStage) return
   activeTab.value = tab.label
-  activeSubStep.value = subStepsByModule[tab.label]?.[0]?.id || ''
   nextTick(() => document.querySelector('.detail-module-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
 const switchStageModule = (label) => {
@@ -431,6 +400,11 @@ const openPreparationPreview = (file) => {
   filePreviewVisible.value = true
 }
 
+const openCasePreview = (caseItem) => {
+  selectedCasePreview.value = caseItem
+  casePreviewDialog.value = true
+}
+
 const generateMinutes = () => {
   if (recordingStatus.value !== '转写完成') {
     return ElMessage.warning('请先完成录音转写')
@@ -513,13 +487,6 @@ const confirmRecord = () => {
       </div>
     </div>
 
-    <div class="detail-meta-bar">
-      <span><el-icon><User /></el-icon>主持人 {{ item.host }}</span>
-      <span><el-icon><Calendar /></el-icon>{{ item.date }}</span>
-      <span><el-icon><Location /></el-icon>三楼多功能教室</span>
-      <button class="meta-member-entry" @click="memberDrawer = true"><el-icon><User /></el-icon>{{ item.participants }} 位参与教师 · 查看活跃度</button>
-    </div>
-
     <div v-if="role === '教师视角'" class="teacher-participation-bar">
       <div class="member-avatar" :style="{ background: currentTeacher.color }">
         {{ currentTeacher.name.slice(-1) }}
@@ -532,21 +499,51 @@ const confirmRecord = () => {
     </div>
 
     <div class="detail-workspace">
-    <nav class="detail-tabs" aria-label="教研模块导航">
-      <div class="module-nav-head">
-        <span>当前模块</span>
-        <strong>{{ activeTab === '成果文件' ? '成果沉淀' : activeTab }}</strong>
-      </div>
-      <button
-        v-for="(step, index) in currentSubSteps"
-        :key="step.id"
-        :class="{ active: activeSubStep === step.id || (!activeSubStep && index === 0) }"
-        @click="scrollToSubStep(step.id)"
-      >
-        <span class="module-step-index">{{ String(index + 1).padStart(2, '0') }}</span>
-        <span class="module-step-copy"><strong>{{ step.label }}</strong><small v-if="step.desc">{{ step.desc }}</small></span>
-      </button>
-    </nav>
+    <aside class="research-context" aria-label="教研概览">
+      <section class="context-card context-summary-card">
+        <header class="context-card-head">
+          <div><span>教研概览</span><strong>{{ item.scope }}</strong></div>
+          <el-tag :type="statusType" size="small" effect="light">{{ currentStatus }}</el-tag>
+        </header>
+
+        <div class="context-host">
+          <span class="context-host-avatar">{{ item.host.slice(0, 1) }}</span>
+          <div><small>主持人</small><strong>{{ item.host }}</strong></div>
+        </div>
+
+        <dl class="context-facts">
+          <div><dt><el-icon><Calendar /></el-icon>研讨时间</dt><dd>{{ item.date }}</dd></div>
+          <div><dt><el-icon><Location /></el-icon>研讨地点</dt><dd>三楼多功能教室</dd></div>
+        </dl>
+
+        <button type="button" class="context-members" @click="memberDrawer = true">
+          <span class="context-member-avatars">
+            <i
+              v-for="member in participants.slice(0, 4)"
+              :key="member.name"
+              :style="{ background: member.color }"
+            >{{ member.name.slice(-1) }}</i>
+          </span>
+          <span><strong>{{ joinedCount }}/{{ item.participants }}</strong><small>参与教师</small></span>
+          <el-icon><View /></el-icon>
+        </button>
+      </section>
+
+      <section class="context-card context-cases-card">
+        <header><div><span>关联案例</span><strong>{{ caseResults.length }}</strong></div><small>点击预览</small></header>
+        <button
+          v-for="caseItem in caseResults"
+          :key="caseItem.id"
+          type="button"
+          class="context-case-row"
+          @click="openCasePreview(caseItem)"
+        >
+          <span class="context-case-cover"><img :src="previewCover" alt="" /><em>{{ caseItem.id }}</em></span>
+          <span><strong>{{ caseItem.title }}</strong><small>{{ caseItem.className }} · {{ caseItem.teacher }}</small></span>
+          <el-icon><View /></el-icon>
+        </button>
+      </section>
+    </aside>
 
     <section class="detail-module-content">
 
@@ -649,11 +646,6 @@ const confirmRecord = () => {
             </section>
           </div>
         </section>
-      </div>
-      <div id="theme-cases" class="overview-side substep-anchor">
-        <h3>关联案例</h3>
-        <div class="case-file"><el-icon><Document /></el-icon><div><strong>沙水区连续观察记录</strong><span>包含 3 段视频、12 张图片</span></div></div>
-        <div class="case-file"><el-icon><Document /></el-icon><div><strong>幼儿对话与作品记录</strong><span>PDF · 8.4 MB</span></div></div>
       </div>
     </div>
 
@@ -948,6 +940,34 @@ const confirmRecord = () => {
     <el-empty v-else description="18 位教师已加入本次教研" />
     </section>
     </div>
+
+    <el-dialog v-model="casePreviewDialog" width="720px" class="case-context-dialog">
+      <template #header>
+        <div class="case-context-dialog-head">
+          <span>关联案例 {{ selectedCasePreview?.id }}</span>
+          <el-tag effect="plain">{{ selectedCasePreview?.className }}</el-tag>
+        </div>
+      </template>
+      <div v-if="selectedCasePreview" class="case-context-preview">
+        <div class="case-context-hero">
+          <img :src="previewCover" alt="关联案例封面" />
+          <div>
+            <small>提交教师 {{ selectedCasePreview.teacher }}</small>
+            <h2>{{ selectedCasePreview.title }}</h2>
+            <p>连续观察幼儿在真实游戏问题中的判断、协商与验证过程，为本次教研讨论提供共同事实。</p>
+          </div>
+        </div>
+        <dl>
+          <div><dt>关联话题</dt><dd>{{ selectedCasePreview.topics }}</dd></div>
+          <div><dt>讨论回复</dt><dd>{{ selectedCasePreview.replies }}</dd></div>
+          <div><dt>现场材料</dt><dd>{{ selectedCasePreview.evidence }}</dd></div>
+        </dl>
+      </div>
+      <template #footer>
+        <el-button @click="casePreviewDialog = false">关闭</el-button>
+        <el-button type="primary" plain @click="ElMessage.success('已打开案例完整记录')">查看完整案例</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="filePreviewVisible" width="920px" top="5vh" class="preparation-preview-dialog">
       <template #header>
