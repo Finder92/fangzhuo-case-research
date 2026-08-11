@@ -215,23 +215,27 @@ const publish = () => {
     </header>
 
     <div class="editor-stage editor-parallel-stage" aria-label="教研并行推进流程">
+      <svg class="editor-flow-arcs" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M 205 80 C 285 80, 290 38, 370 38" />
+        <path d="M 205 80 C 285 80, 290 122, 370 122" />
+        <path d="M 630 38 C 710 38, 715 80, 795 80" />
+        <path d="M 630 122 C 710 122, 715 80, 795 80" />
+      </svg>
       <div class="editor-flow-node is-current">
         <span class="editor-flow-index">01</span>
         <div><strong>教研准备</strong></div>
       </div>
-      <div class="editor-flow-split" aria-hidden="true"></div>
       <div class="editor-flow-branches">
-        <div class="editor-flow-node is-pending">
+        <div class="editor-flow-node is-pending is-topic">
           <span class="editor-flow-index">02A</span>
           <div><strong>话题广场</strong></div>
         </div>
-        <div class="editor-flow-node is-pending">
+        <div class="editor-flow-node is-pending is-onsite">
           <span class="editor-flow-index">02B</span>
           <div><strong>现场记录</strong></div>
         </div>
       </div>
-      <div class="editor-flow-merge" aria-hidden="true"></div>
-      <div class="editor-flow-node is-pending">
+      <div class="editor-flow-node is-pending is-result">
         <span class="editor-flow-index">03</span>
         <div><strong>成果沉淀</strong></div>
       </div>
