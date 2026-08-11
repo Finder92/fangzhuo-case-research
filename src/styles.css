@@ -153,24 +153,11 @@ button { cursor: pointer; }
 .autosave { color: #8591a2; font-size: 11px; margin-right: 7px; display: flex; align-items: center; gap: 6px; }
 .autosave i { width: 6px; height: 6px; border-radius: 50%; background: #58b479; }
 .editor-stage { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 17px 12%; margin-bottom: 18px; }
-.editor-parallel-stage { position: relative; display: grid; grid-template-columns: minmax(190px,.9fr) minmax(360px,1.35fr) minmax(190px,.9fr); align-items: center; gap: 74px; min-height: 164px; padding: 18px 7%; overflow: hidden; background: linear-gradient(90deg,#fff 0%,#f8fbff 48%,#fff 100%); }
-.editor-flow-arcs { position: absolute; z-index: 0; inset: 18px 7%; width: 86%; height: calc(100% - 36px); overflow: visible; }
-.editor-flow-arcs path { fill: none; stroke: #9ebbe0; stroke-width: 2.15; vector-effect: non-scaling-stroke; }
-.editor-flow-node { position: relative; z-index: 1; min-width: 0; min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 11px 16px; border: 1px solid #d7e2ef; border-radius: 12px; background: rgba(255,255,255,.98); box-shadow: 0 5px 14px rgba(42,72,110,.06); }
-.editor-flow-node > div { min-width: 0; }
-.editor-flow-node strong { color: #334760; font-size: 13px; font-weight: 700; white-space: nowrap; }
-.editor-flow-index { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 34px; height: 34px; border: 1px solid #c6d5e7; border-radius: 50%; color: #778aa4; background: #f7faff; font-size: 9px; font-weight: 750; }
-.editor-flow-node.is-current { border-color: #78a8e8; background: #f1f7ff; box-shadow: 0 7px 18px rgba(73,128,201,.13); }
-.editor-flow-node.is-current::after { content: '当前'; position: absolute; top: -8px; right: 12px; padding: 2px 7px; border-radius: 8px; color: #fff; background: var(--primary); font-size: 8px; font-weight: 700; }
-.editor-flow-node.is-current .editor-flow-index { color: #fff; background: var(--primary); border-color: var(--primary); box-shadow: 0 0 0 4px #e5f0ff; }
-.editor-flow-node.is-current strong { color: var(--primary-dark); }
-.editor-flow-branches { position: relative; z-index: 1; display: grid; gap: 14px; }
-.editor-flow-node.is-topic { border-color: #c4e0e7; background: #f5fbfc; }
-.editor-flow-node.is-topic .editor-flow-index { border-color: #9dcbd6; color: #397e91; background: #e9f6f8; }
-.editor-flow-node.is-onsite { border-color: #ead5bd; background: #fffaf4; }
-.editor-flow-node.is-onsite .editor-flow-index { border-color: #dbb98e; color: #9a6732; background: #fdf1e3; }
-.editor-flow-node.is-result { border-color: #d8d0e9; background: #faf8fd; }
-.editor-flow-node.is-result .editor-flow-index { border-color: #bfb2db; color: #715d9b; background: #f0ebf8; }
+.editor-detail-flow { padding: 10px 28px; border-radius: 12px; box-shadow: 0 5px 16px rgba(38,65,104,.035); }
+.editor-detail-flow .parallel-flow { min-height: 100px; }
+.editor-detail-flow .flow-node { padding: 8px 11px; }
+.editor-detail-flow .flow-node:hover { transform: none; }
+.editor-detail-flow .flow-fork { gap: 8px; }
 
 .parallel-status-mini { width: 270px; height: 68px; position: relative; }
 .parallel-mini-lines { position: absolute; z-index: 0; inset: 0; width: 270px; height: 68px; overflow: visible; }
