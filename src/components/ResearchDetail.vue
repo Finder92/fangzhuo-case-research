@@ -515,7 +515,8 @@ const confirmRecord = () => {
       <p>{{ teacherStatusText }}</p>
     </div>
 
-    <div class="detail-tabs">
+    <div class="detail-workspace">
+    <nav class="detail-tabs" aria-label="教研模块导航">
       <button
         v-for="tab in tabs"
         :key="tab.label"
@@ -527,7 +528,9 @@ const confirmRecord = () => {
         {{ tab.label }}
         <span v-if="tab.label === '话题广场'">{{ topics.length }}</span>
       </button>
-    </div>
+    </nav>
+
+    <section class="detail-module-content">
 
     <div v-if="activeTab === '话题广场'" class="discussion-layout">
       <main class="topics-panel">
@@ -909,6 +912,8 @@ const confirmRecord = () => {
     </div>
 
     <el-empty v-else description="18 位教师已加入本次教研" />
+    </section>
+    </div>
 
     <el-dialog v-model="filePreviewVisible" width="920px" top="5vh" class="preparation-preview-dialog">
       <template #header>
