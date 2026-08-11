@@ -252,7 +252,7 @@ const publish = () => {
 
       <main class="form-panel">
         <div v-if="activeSection === '基础信息'" class="form-section">
-          <div class="section-title"><div><h2>基础信息</h2><p>明确本次教研要解决的真实问题。</p></div></div>
+          <div class="section-title"><div><h2>基础信息</h2></div></div>
           <el-form label-position="top">
             <el-form-item label="教研主题" required>
               <div class="field-with-action"><el-input v-model="form.title" maxlength="50" show-word-limit placeholder="输入一个清晰、具体、可研讨的问题" /><el-button type="primary" plain :icon="MagicStick" :loading="generating" @click="generateContent">AI 生成</el-button></div>
@@ -271,8 +271,7 @@ const publish = () => {
             </div>
             <div class="research-cover-field">
               <div class="cover-field-label">
-                <div><strong>教研封面</strong><span>用于教研列表和详情页展示，未上传时默认使用关联案例首图</span></div>
-                <em>建议比例 3:2，JPG / PNG / WebP，不超过 5MB</em>
+                <div><strong>教研封面</strong></div>
               </div>
               <div class="cover-editor">
                 <div class="cover-preview">
@@ -281,7 +280,6 @@ const publish = () => {
                 </div>
                 <div class="cover-editor-info">
                   <strong>{{ form.coverSource === '手动上传' ? '已使用自定义封面' : '已自动选取案例图片' }}</strong>
-                  <p>封面会同步显示在案例教研列表。选择清晰、有代表性的活动现场图片，能帮助教师快速识别主题。</p>
                   <div>
                     <el-upload
                       action="#"
@@ -304,7 +302,7 @@ const publish = () => {
         </div>
 
         <div v-else-if="activeSection === '活动方案'" class="form-section">
-          <div class="section-title"><div><h2>活动方案</h2><p>安排研讨节奏，帮助参与者提前准备。</p></div></div>
+          <div class="section-title"><div><h2>活动方案</h2></div></div>
           <el-form label-position="top">
             <div class="two-cols">
               <el-form-item label="研讨日期" required><el-input v-model="form.date" :prefix-icon="Calendar" /></el-form-item>
@@ -312,25 +310,24 @@ const publish = () => {
             </div>
             <el-form-item label="研讨安排" required><div class="field-label-action"><span>研讨安排</span><el-button link type="primary" :icon="MagicStick" @click="generateContent">生成活动方案</el-button></div><el-input v-model="form.arrangement" type="textarea" :rows="12" placeholder="输入教研流程、准备材料与时间安排" /></el-form-item>
             <div class="material-upload">
-              <div class="upload-label"><div><strong>教研素材</strong><span>按文件类型归类，发布后供参与教师预览</span></div><el-upload action="#" :auto-upload="false" multiple><el-button type="primary" plain :icon="UploadFilled">上传教研素材</el-button></el-upload></div>
+              <div class="upload-label"><div><strong>教研素材</strong></div><el-upload action="#" :auto-upload="false" multiple><el-button type="primary" plain :icon="UploadFilled">上传教研素材</el-button></el-upload></div>
               <div class="material-library"><section v-for="group in materialGroups" :key="group.type"><header><strong>{{ group.type }}</strong><span>{{ group.files.length }} 个</span></header><article v-for="file in group.files" :key="file.id" @click="openMaterialPreview(file)"><span class="editor-material-thumb" :class="file.type"><img v-if="file.cover" :src="file.cover" alt="" /><el-icon v-else><component :is="file.icon" /></el-icon></span><div><b>{{ file.name }}</b><small>{{ file.type }} · {{ file.size }}</small></div><el-button link type="primary" :icon="View">预览</el-button></article></section></div>
             </div>
           </el-form>
         </div>
 
         <div v-else-if="activeSection === '参与设置'" class="form-section">
-          <div class="section-title"><div><h2>参与设置</h2><p>确定主持人与参与教师的研讨权限。</p></div></div>
+          <div class="section-title"><div><h2>参与设置</h2></div></div>
           <el-form label-position="top">
             <div class="scope-selection-note">
               <span><el-icon><Lock /></el-icon>当前教研范围</span>
               <strong>{{ form.scope }}</strong>
-              <p>可选择全园已开通“案例教研”权限的教师</p>
             </div>
 
             <div class="participant-setup-grid">
               <article class="host-selection-card">
                 <div class="selection-card-head">
-                  <div><span>主持人</span><small>负责组织研讨与过程管理</small></div>
+                  <div><span>主持人</span></div>
                   <el-button link type="primary" @click="openMemberPicker('host')">更换</el-button>
                 </div>
                 <div class="selected-host">
@@ -368,7 +365,7 @@ const publish = () => {
 
             <div class="preset-topic-block">
               <div class="preset-topic-head">
-                <div><strong>管理员预设话题</strong><span>发布教研时同步创建，用于引导教师快速进入讨论。</span></div>
+                <div><strong>管理员预设话题</strong></div>
                 <el-button type="primary" plain :icon="Plus" @click="presetTopicDialog = true">新增话题</el-button>
               </div>
               <div v-if="form.preTopics.length" class="preset-topic-list">
@@ -385,22 +382,19 @@ const publish = () => {
               <el-icon><Lock /></el-icon>
               <div>
                 <strong>权限按教研范围生效</strong>
-                <p>园级、年级组、班级教研分别匹配有权限的教师；主班老师可仅开通“案例教研”权限，不自动获得案例管理、统计等其他模块权限。</p>
-                <span>演示页只呈现权限结果，真实鉴权由后端对用户、范围、教研内角色和操作动作进行校验。</span>
               </div>
             </div>
           </el-form>
         </div>
 
         <div v-else class="form-section publish-preview">
-          <div class="preview-check"><el-icon><CircleCheck /></el-icon><h2>发布前检查</h2><p>基础信息、活动方案和参与设置已准备完成。</p></div>
+          <div class="preview-check"><el-icon><CircleCheck /></el-icon><h2>发布前检查</h2></div>
           <div class="preview-card">
             <span>{{ form.scope }}</span>
             <h3>{{ form.title || '尚未填写教研主题' }}</h3>
             <p>{{ form.basis || '填写教研目标后将在这里显示摘要。' }}</p>
             <dl><div><dt>主持人</dt><dd>{{ form.host }}</dd></div><div><dt>研讨时间</dt><dd>{{ form.date }}</dd></div><div><dt>参与教师</dt><dd>{{ form.teachers.length }} 人</dd></div><div><dt>预设话题</dt><dd>{{ form.preTopics.length }} 个</dd></div></dl>
           </div>
-          <el-alert title="发布后，系统将通知参与教师并开放话题与回复功能。" type="info" show-icon :closable="false" />
           <el-button type="primary" size="large" @click="publish">确认发布研讨</el-button>
         </div>
       </main>
@@ -409,12 +403,7 @@ const publish = () => {
         <div class="context-card">
           <span class="ai-mark"><el-icon><MagicStick /></el-icon></span>
           <h3>教研助手</h3>
-          <p>从已选案例中提炼真问题，生成教研目标与可执行的活动方案。</p>
           <el-button type="primary" plain :loading="generating" @click="generateContent">生成完整建议</el-button>
-        </div>
-        <div class="context-card subtle">
-          <h3>发布后会发生什么？</h3>
-          <ol><li>参与教师收到研讨通知</li><li>预设话题自动进入在线研讨</li><li>教师发表话题或参与回复</li><li>线下会议后归档资料并生成小结、总结</li></ol>
         </div>
       </aside>
     </div>
@@ -435,8 +424,8 @@ const publish = () => {
     </el-dialog>
 
     <el-dialog v-model="aiSuggestionVisible" width="1080px" top="7vh" class="ai-suggestion-dialog">
-      <template #header><div class="ai-suggestion-title"><span><el-icon><MagicStick /></el-icon></span><div><h2>AI 教研建议</h2><p>基于关联案例提炼研讨主题、目标和活动安排；选择后仍可继续编辑。</p></div></div></template>
-      <div class="ai-suggestion-layout"><aside><strong>生成依据</strong><p>2 个关联案例</p><p>3 段观察视频</p><p>12 条关键观察</p><small>已优先保留幼儿行为事实，避免空泛结论。</small></aside><main><article v-for="(suggestion, index) in aiSuggestions" :key="suggestion.title" :class="{ selected: selectedSuggestion === index }"><header><span>方案 {{ String(index + 1).padStart(2, '0') }}</span><el-button type="primary" plain @click="applySuggestion(index)">选用此方案</el-button></header><h3>{{ suggestion.title }}</h3><ol><li v-for="point in suggestion.points" :key="point">{{ point }}</li></ol></article></main></div>
+      <template #header><div class="ai-suggestion-title"><span><el-icon><MagicStick /></el-icon></span><div><h2>AI 教研建议</h2></div></div></template>
+      <div class="ai-suggestion-layout"><aside><strong>生成依据</strong><p>2 个关联案例</p><p>3 段观察视频</p><p>12 条关键观察</p></aside><main><article v-for="(suggestion, index) in aiSuggestions" :key="suggestion.title" :class="{ selected: selectedSuggestion === index }"><header><span>方案 {{ String(index + 1).padStart(2, '0') }}</span><el-button type="primary" plain @click="applySuggestion(index)">选用此方案</el-button></header><h3>{{ suggestion.title }}</h3><ol><li v-for="point in suggestion.points" :key="point">{{ point }}</li></ol></article></main></div>
       <template #footer><el-button @click="aiSuggestionVisible = false">暂不使用</el-button></template>
     </el-dialog>
 

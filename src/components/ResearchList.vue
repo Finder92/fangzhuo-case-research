@@ -86,7 +86,6 @@ const hasResults = (item) => item.status === '已完成' || item.stage >= 4
       <div>
         <div class="crumb">园本教研 / 案例教研</div>
         <h1>案例教研</h1>
-        <p>围绕真实案例，完成教研准备、在线研讨、现场记录与成果沉淀。</p>
       </div>
       <div v-if="role === '管理视角'" class="heading-actions">
         <el-button :icon="Download">批量下载</el-button>

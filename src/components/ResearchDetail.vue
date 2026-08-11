@@ -201,14 +201,6 @@ const participatedCount = computed(() => participants.filter(
   (member) => ['已参与', '已出席'].includes(member.status),
 ).length)
 const absentParticipationCount = computed(() => participants.length - joinedCount.value)
-const teacherStatusText = computed(() => ({
-  未加入: '加入后可发表话题、回复观点，并接收教研通知。',
-  已加入: '你已加入本次教研，发表话题或回复后将计为已参与。',
-  已参与: '你已完成线上参与，可以继续发表观点或等待现场教研。',
-  已出席: '你已完成现场签到，本次教研参与记录完整。',
-  请假: '你已提交请假，本次教研将记录为请假。',
-}[teacherStatus.value]))
-
 const memberActivity = (member) => {
   const score = member.topicCount * 3 + member.replyCount
   if (score >= 15) return { label: '高活跃', type: 'success' }
@@ -537,7 +529,6 @@ const confirmRecord = () => {
         <strong>{{ currentTeacher.name }} · {{ currentTeacher.className }}</strong>
       </div>
       <el-tag :type="memberStatusType(teacherStatus)" effect="plain">{{ teacherStatus }}</el-tag>
-      <p>{{ teacherStatusText }}</p>
     </div>
 
     <div class="detail-workspace">
@@ -628,7 +619,6 @@ const confirmRecord = () => {
           <div class="preparation-files-head">
             <div>
               <h2>准备阶段上传的文件</h2>
-              <p>发布教研主题前上传的素材已按文件格式归类，支持前端预览。</p>
             </div>
             <el-tag type="info" effect="plain">{{ preparationFiles.length }} 个文件</el-tag>
           </div>
@@ -670,7 +660,7 @@ const confirmRecord = () => {
     <div v-else-if="activeTab === '现场记录'" class="record-layout">
       <main class="record-main">
         <div id="record-info" class="section-title substep-anchor">
-          <div><h2>现场记录</h2><p>归档线下会议资料，录音转写后由 AI 生成可编辑会议纪要。</p></div>
+          <div><h2>现场记录</h2></div>
           <el-tag :type="currentStage >= 4 ? 'success' : 'warning'">{{ currentStage >= 4 ? '已归档' : '待完善' }}</el-tag>
         </div>
 
@@ -701,7 +691,6 @@ const confirmRecord = () => {
               <span class="record-file-icon photo"><el-icon><PictureFilled /></el-icon></span>
               <div class="record-file-main">
                 <div><strong>现场照片与视频</strong><el-tag type="info" size="small">已上传 6 项</el-tag></div>
-                <p>用于补充空间布置、教师分组、观点板书等现场影像证据。</p>
                 <el-upload action="#" :auto-upload="false" multiple><el-button :icon="UploadFilled">继续上传</el-button></el-upload>
               </div>
             </article>
@@ -711,7 +700,7 @@ const confirmRecord = () => {
             <div class="ai-minutes-head">
               <div>
                 <span class="ai-mark"><el-icon><MagicStick /></el-icon></span>
-                <div><strong>AI 会议纪要</strong><small>根据完整录音转写稿生成 Markdown 初稿，生成后主持人可编辑。</small></div>
+                <div><strong>AI 会议纪要</strong></div>
               </div>
               <div>
                 <el-tag :type="minutesType" size="small">{{ minutesStatus }}</el-tag>
@@ -1023,7 +1012,6 @@ const confirmRecord = () => {
           <div><strong>{{ participatedCount }}</strong><span>活跃成员</span></div>
         </div>
         <div class="member-drawer-tools">
-          <span>活跃度根据成员发表话题和回复数量计算</span>
           <el-button
             v-if="role === '管理视角'"
             size="small"
