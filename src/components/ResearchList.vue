@@ -159,16 +159,16 @@ const hasResults = (item) => item.status === '已完成' || item.stage >= 4
                 <polyline points="126,8 178,8 204,28 252,28" />
                 <polyline points="126,48 178,48 204,28 252,28" />
               </svg>
-              <div class="parallel-mini-node" :class="{ done: isPrepared(item) }">
+              <div class="parallel-mini-node node-prepare" :class="{ done: isPrepared(item) }">
                 <i>{{ isPrepared(item) ? '✓' : '1' }}</i><span>准备</span>
               </div>
-              <div class="parallel-mini-node" :class="{ done: hasResearchRecord(item) }">
+              <div class="parallel-mini-node node-topic" :class="{ done: hasResearchRecord(item) }">
                 <i>{{ hasResearchRecord(item) ? '✓' : 'A' }}</i><span>话题广场</span>
               </div>
-              <div class="parallel-mini-node" :class="{ done: hasOnsiteRecord(item) }">
+              <div class="parallel-mini-node node-onsite" :class="{ done: hasOnsiteRecord(item) }">
                 <i>{{ hasOnsiteRecord(item) ? '✓' : 'B' }}</i><span>现场记录</span>
               </div>
-              <div class="parallel-mini-node" :class="{ done: hasResults(item) }">
+              <div class="parallel-mini-node node-result" :class="{ done: hasResults(item) }">
                 <i>{{ hasResults(item) ? '✓' : '3' }}</i><span>成果</span>
               </div>
             </div>

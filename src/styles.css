@@ -174,14 +174,18 @@ button { cursor: pointer; }
 .parallel-status-mini { width: 270px; height: 68px; position: relative; }
 .parallel-mini-lines { position: absolute; z-index: 0; inset: 0; width: 270px; height: 68px; overflow: visible; }
 .parallel-mini-lines polyline { fill: none; stroke: #8faed2; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.parallel-mini-node { z-index: 1; display: grid; justify-items: center; align-content: center; gap: 3px; color: #7488a2; font-size: 8px; line-height: 1; white-space: nowrap; position: absolute; width: 50px; min-height: 29px; }
+.parallel-mini-node { --node-color: #4f83dc; --node-border: #a8c1e6; z-index: 1; display: grid; justify-items: center; align-content: center; gap: 3px; color: #7488a2; font-size: 8px; line-height: 1; white-space: nowrap; position: absolute; width: 50px; min-height: 29px; }
+.parallel-mini-node.node-prepare { --node-color: #4f83dc; --node-border: #a8c1e6; }
+.parallel-mini-node.node-topic { --node-color: #438f9d; --node-border: #a8ccd2; }
+.parallel-mini-node.node-onsite { --node-color: #c18749; --node-border: #dfc09d; }
+.parallel-mini-node.node-result { --node-color: #7469aa; --node-border: #bbb5d8; }
 .parallel-status-mini > .parallel-mini-node:nth-of-type(2) { left: 101px; top: 0; }
 .parallel-status-mini > .parallel-mini-node:nth-of-type(3) { left: 101px; top: 40px; }
 .parallel-status-mini > .parallel-mini-node:first-of-type { left: -7px; top: 20px; }
 .parallel-status-mini > .parallel-mini-node:last-of-type { right: -7px; top: 20px; }
-.parallel-mini-node i { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border: 1px solid #aabed6; border-radius: 50%; background: #fff; color: #7188a4; font-style: normal; font-size: 8px; font-weight: 700; }
-.parallel-mini-node.done { color: #356bb8; font-weight: 600; }
-.parallel-mini-node.done i { color: #fff; background: #4f83dc; border-color: #4f83dc; }
+.parallel-mini-node i { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border: 1px solid var(--node-border); border-radius: 50%; background: #fff; color: var(--node-color); font-style: normal; font-size: 8px; font-weight: 700; }
+.parallel-mini-node.done { color: var(--node-color); font-weight: 600; }
+.parallel-mini-node.done i { color: #fff; background: var(--node-color); border-color: var(--node-color); }
 .editor-layout { display: grid; grid-template-columns: 210px minmax(580px, 1fr) 250px; align-items: start; gap: 18px; }
 .editor-nav, .form-panel, .context-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
 .editor-nav { padding: 10px; position: sticky; top: 86px; }
