@@ -216,11 +216,11 @@ const publish = () => {
 
     <div class="editor-stage editor-detail-flow" aria-label="教研并行推进流程">
       <div class="parallel-flow">
-        <svg class="parallel-flow-arcs" viewBox="0 0 900 160" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M 182 80 C 244 80, 252 38, 352 38" />
-          <path d="M 182 80 C 244 80, 252 122, 352 122" />
-          <path d="M 548 38 C 648 38, 656 80, 718 80" />
-          <path d="M 548 122 C 648 122, 656 80, 718 80" />
+        <svg class="parallel-flow-arcs" viewBox="0 0 960 160" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M 240 80 C 270 80, 286 38, 320 38" />
+          <path d="M 240 80 C 270 80, 286 122, 320 122" />
+          <path d="M 640 38 C 674 38, 690 80, 720 80" />
+          <path d="M 640 122 C 674 122, 690 80, 720 80" />
         </svg>
         <div class="flow-node flow-theme active"><span>01</span><div><strong>教研准备</strong></div></div>
         <div class="flow-fork">

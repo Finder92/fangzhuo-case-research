@@ -154,7 +154,7 @@ button { cursor: pointer; }
 .autosave i { width: 6px; height: 6px; border-radius: 50%; background: #58b479; }
 .editor-stage { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 17px 12%; margin-bottom: 18px; }
 .editor-detail-flow { padding: 10px 28px; border-radius: 12px; box-shadow: 0 5px 16px rgba(38,65,104,.035); }
-.editor-detail-flow .parallel-flow { min-height: 100px; }
+.editor-detail-flow .parallel-flow { width: min(960px, 100%); min-height: 100px; margin: 0 auto; grid-template-columns: 25% 33.333% 25%; justify-content: space-between; gap: 0; }
 .editor-detail-flow .flow-node { padding: 8px 11px; }
 .editor-detail-flow .flow-node:hover { transform: none; }
 .editor-detail-flow .flow-fork { gap: 8px; }
