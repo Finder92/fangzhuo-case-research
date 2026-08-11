@@ -2,12 +2,11 @@
 import { computed, nextTick, reactive, ref } from 'vue'
 import {
   ArrowLeft, Plus, ChatDotRound, User, Calendar, Location, Bell,
-  MoreFilled, Top, Star, Document, Promotion, CircleCheck, Clock,
+  MoreFilled, Top, Star, Document, Promotion, CircleCheck,
   Headset, PictureFilled, UploadFilled, Tickets, MagicStick,
   FolderOpened, Download, VideoCamera, View
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import StageTrack from './StageTrack.vue'
 import { seedTopics } from '../data/research'
 
 const props = defineProps({
@@ -150,28 +149,28 @@ const tabs = computed(() => (
 const activeSubStep = ref('')
 const subStepsByModule = {
   '教研主题': [
-    { id: 'theme-goal', label: '教研目标', desc: '明确本次研究问题' },
-    { id: 'theme-plan', label: '研讨安排', desc: '查看活动推进方式' },
-    { id: 'theme-materials', label: '准备素材', desc: '预览发布前上传资料' },
-    { id: 'theme-cases', label: '关联案例', desc: '查看本次研究依据' },
+    { id: 'theme-goal', label: '教研目标' },
+    { id: 'theme-plan', label: '研讨安排' },
+    { id: 'theme-materials', label: '准备素材' },
+    { id: 'theme-cases', label: '关联案例' },
   ],
   '话题广场': [
-    { id: 'topic-list', label: '话题列表', desc: '发表话题与参与回复' },
-    { id: 'topic-activity', label: '活跃分析', desc: '查看成员参与情况' },
-    { id: 'topic-guide', label: '研讨引导', desc: '辅助主持人推进讨论' },
+    { id: 'topic-list', label: '话题列表' },
+    { id: 'topic-activity', label: '活跃分析' },
+    { id: 'topic-guide', label: '研讨引导' },
   ],
   '现场记录': [
-    { id: 'record-info', label: '会议信息', desc: '时间与实际出勤' },
-    { id: 'record-audio', label: '录音及文档', desc: '上传并完成录音转写' },
-    { id: 'record-media', label: '照片与视频', desc: '补充现场影像证据' },
-    { id: 'record-confirm', label: '资料确认', desc: '检查并提交现场资料' },
+    { id: 'record-info', label: '会议信息' },
+    { id: 'record-audio', label: '录音及文档' },
+    { id: 'record-media', label: '照片与视频' },
+    { id: 'record-confirm', label: '资料确认' },
   ],
   '成果文件': [
-    { id: 'result-minutes', label: '会议纪要分析', desc: 'AI 生成并编辑纪要' },
-    { id: 'result-cases', label: '案例小结', desc: '每个案例独立总结' },
-    { id: 'result-summary', label: '教研总结', desc: '汇总整次教研结论' },
-    { id: 'result-review', label: 'AI 会议自评', desc: '分析会议质量与改进点' },
-    { id: 'result-archive', label: '会议资料归档', desc: '打包保存全部资料' },
+    { id: 'result-minutes', label: '会议纪要分析' },
+    { id: 'result-summary', label: '教研总结' },
+    { id: 'result-cases', label: '案例小结' },
+    { id: 'result-review', label: 'AI 会议自评' },
+    { id: 'result-archive', label: '会议资料归档' },
   ],
 }
 const currentSubSteps = computed(() => subStepsByModule[activeTab.value] || [])
@@ -179,20 +178,22 @@ const scrollToSubStep = (id) => {
   activeSubStep.value = id
   nextTick(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
-const stageTrackItems = computed(() => (
-  props.role === '教师视角'
-    ? ['教研主题', '话题广场', '成果文件']
-    : ['教研主题', '话题广场', '现场记录', '成果文件']
-))
-const stageTrackCurrent = computed(() => (
-  props.role === '教师视角'
-    ? currentStage.value >= 4 ? 3 : currentStage.value >= 2 ? 2 : 1
-    : currentStage.value
-))
-
 const totalReplies = computed(() => topics.value.reduce((sum, topic) => sum + topic.replies.length, 0))
 const caseCompletedCount = computed(() => caseResults.filter((item) => item.status === '已完成').length)
 const allCasesCompleted = computed(() => caseCompletedCount.value === caseResults.length)
+const resultCompletedCount = computed(() => [
+  minutesStatus.value === '已生成',
+  overallSummaryStatus.value === '已完成',
+  allCasesCompleted.value,
+  meetingEvaluationStatus.value === '已生成',
+  archiveStatus.value === '已完成',
+].filter(Boolean).length)
+const allResultsReadyForArchive = computed(() => (
+  minutesStatus.value === '已生成'
+  && overallSummaryStatus.value === '已完成'
+  && allCasesCompleted.value
+  && meetingEvaluationStatus.value === '已生成'
+))
 const currentTeacher = computed(() => participants.find((member) => member.current))
 const teacherStatus = computed(() => currentTeacher.value?.status || '未加入')
 const joinedCount = computed(() => participants.filter((member) => member.status !== '未加入').length)
@@ -238,13 +239,6 @@ const resultStatusType = (status) => ({
   生成中: 'warning',
   待生成: 'info',
 }[status] || 'info')
-
-const stageHint = computed(() => ({
-  1: ['教研主题尚未发布', '完善主题、活动方案与参与设置后，即可发布在线研讨。'],
-  2: ['在线研讨正在进行', '线上讨论与线下会议均归在本阶段；会议结束后进入现场记录。'],
-  3: ['请完善现场记录', '上传录音、会议文档、现场照片与视频；录音转写完成后可由 AI 生成可编辑的 Markdown 会议纪要。'],
-  4: ['进入成果沉淀', '先形成案例小结和整次教研总结，最后生成本次会议资料归档包。'],
-}[currentStage.value]))
 
 const statusType = computed(() => ({
   草稿: 'info',
@@ -317,6 +311,7 @@ const openResult = (title, content) => {
 }
 
 const generateCaseSummary = (caseItem) => {
+  if (recordingStatus.value !== '转写完成') return
   generatingResult.value = `case-${caseItem.id}`
   caseItem.status = '生成中'
   setTimeout(() => {
@@ -327,7 +322,7 @@ const generateCaseSummary = (caseItem) => {
 }
 
 const generateOverallSummary = () => {
-  if (!allCasesCompleted.value) return
+  if (recordingStatus.value !== '转写完成') return
   generatingResult.value = 'overall'
   overallSummaryStatus.value = '生成中'
   setTimeout(() => {
@@ -338,7 +333,7 @@ const generateOverallSummary = () => {
 }
 
 const generateArchive = () => {
-  if (overallSummaryStatus.value !== '已完成') return
+  if (!allResultsReadyForArchive.value) return
   generatingResult.value = 'archive'
   archiveStatus.value = '生成中'
   setTimeout(() => {
@@ -457,7 +452,7 @@ const generateMinutes = () => {
 }
 
 const generateMeetingEvaluation = () => {
-  if (minutesStatus.value !== '已生成' || overallSummaryStatus.value !== '已完成') return
+  if (minutesStatus.value !== '已生成' || overallSummaryStatus.value !== '已完成' || !allCasesCompleted.value) return
   meetingEvaluationStatus.value = '生成中'
   setTimeout(() => { meetingEvaluationStatus.value = '已生成'; ElMessage.success('AI 会议评价已生成') }, 800)
 }
@@ -517,16 +512,12 @@ const confirmRecord = () => {
           <path d="M 548 38 C 648 38, 656 80, 718 80" />
           <path d="M 548 122 C 648 122, 656 80, 718 80" />
         </svg>
-        <button class="flow-node flow-theme" :class="{ active: activeTab === '教研主题' }" @click="switchStageModule('教研主题')"><span>01</span><div><strong>教研主题</strong><small>发布并开放参与</small></div></button>
+        <button class="flow-node flow-theme" :class="{ active: activeTab === '教研主题' }" @click="switchStageModule('教研主题')"><span>01</span><div><strong>教研主题</strong></div></button>
         <div class="flow-fork">
-          <button class="flow-node flow-record" :class="{ active: activeTab === '话题广场' }" @click="switchStageModule('话题广场')"><span>02A</span><div><strong>话题广场</strong><small>{{ topics.length }} 个话题 · 持续开放</small></div></button>
-          <button v-if="role === '管理视角'" class="flow-node flow-site" :class="{ active: activeTab === '现场记录' }" @click="switchStageModule('现场记录')"><span>02B</span><div><strong>现场记录</strong><small>资料、出勤与转写</small></div></button>
+          <button class="flow-node flow-record" :class="{ active: activeTab === '话题广场' }" @click="switchStageModule('话题广场')"><span>02A</span><div><strong>话题广场</strong></div></button>
+          <button v-if="role === '管理视角'" class="flow-node flow-site" :class="{ active: activeTab === '现场记录' }" @click="switchStageModule('现场记录')"><span>02B</span><div><strong>现场记录</strong></div></button>
         </div>
-        <button class="flow-node flow-result" :class="{ active: activeTab === '成果文件' }" @click="switchStageModule('成果文件')"><span>03</span><div><strong>成果沉淀</strong><small>纪要、总结、评价与归档</small></div></button>
-      </div>
-      <div class="stage-hint">
-        <el-icon><Clock /></el-icon>
-        <div><strong>{{ stageHint[0] }}</strong><span>{{ stageHint[1] }}</span></div>
+        <button class="flow-node flow-result" :class="{ active: activeTab === '成果文件' }" @click="switchStageModule('成果文件')"><span>03</span><div><strong>成果沉淀</strong></div></button>
       </div>
     </div>
 
@@ -562,7 +553,7 @@ const confirmRecord = () => {
         @click="scrollToSubStep(step.id)"
       >
         <span class="module-step-index">{{ String(index + 1).padStart(2, '0') }}</span>
-        <span class="module-step-copy"><strong>{{ step.label }}</strong><small>{{ step.desc }}</small></span>
+        <span class="module-step-copy"><strong>{{ step.label }}</strong><small v-if="step.desc">{{ step.desc }}</small></span>
       </button>
     </nav>
 
@@ -796,38 +787,92 @@ const confirmRecord = () => {
         <div class="result-page-head">
           <div>
             <h2>{{ role === '管理视角' ? '成果沉淀' : '教研成果' }}</h2>
-            <p>先完成每个案例的小结，再汇总整次教研结论，最终打包本次会议的全部归档资料。</p>
           </div>
           <el-tag :type="currentStatus === '已完成' ? 'success' : 'warning'" effect="light">
             {{ currentStatus === '已完成' ? '全部成果已完成' : '成果整理中' }}
           </el-tag>
         </div>
 
-        <section id="result-minutes" class="meeting-output-section substep-anchor">
-          <div class="result-section-head"><div><span>01</span><div><h3>会议纪要分析</h3><p>根据录音转写由 AI 生成结构化纪要，主持人可继续编辑。</p></div></div><el-tag :type="minutesType" effect="plain">{{ minutesStatus }}</el-tag></div>
-          <div class="meeting-output-body"><el-input v-if="minutesStatus === '已生成'" v-model="meeting.note" type="textarea" :rows="8" placeholder="AI 生成后可编辑会议纪要" /><el-alert v-else title="先在“现场记录”上传录音并完成转写，即可生成会议纪要。" type="info" :closable="false" show-icon /><el-button v-if="role === '管理视角'" type="primary" plain :disabled="recordingStatus !== '转写完成'" :loading="minutesStatus === '生成中'" @click="generateMinutes">{{ minutesStatus === '已生成' ? '重新生成纪要' : 'AI 生成纪要' }}</el-button></div>
-        </section>
-
-        <div class="result-progress">
-          <div class="result-progress-step" :class="{ done: allCasesCompleted }">
-            <span><el-icon><Document /></el-icon></span>
-            <div><strong>案例小结 {{ caseCompletedCount }}/{{ caseResults.length }}</strong><small>每个案例独立形成小结</small></div>
+        <div class="result-progress-panel">
+          <div class="result-progress-head">
+            <div><strong>成果完成进度</strong></div>
+            <b>{{ resultCompletedCount }}/5</b>
           </div>
-          <i></i>
-          <div class="result-progress-step" :class="{ done: overallSummaryStatus === '已完成' }">
-            <span><el-icon><CircleCheck /></el-icon></span>
-            <div><strong>教研总结</strong><small>{{ overallSummaryStatus }}</small></div>
+          <div class="result-progress-source" :class="{ done: recordingStatus === '转写完成' }">
+            <span><el-icon><Headset /></el-icon></span>
+            <div><strong>会议材料</strong></div>
+            <el-tag :type="recordingStatus === '转写完成' ? 'success' : 'info'" effect="plain">{{ recordingStatus }}</el-tag>
           </div>
-          <i></i>
-          <div class="result-progress-step" :class="{ done: archiveStatus === '已完成' }">
-            <span><el-icon><FolderOpened /></el-icon></span>
-            <div><strong>会议归档包</strong><small>{{ archiveStatus }}</small></div>
+          <div class="result-progress-groups">
+            <section class="result-progress-group parallel">
+              <div class="result-progress-group-head"><strong>并行生成</strong></div>
+              <div class="result-progress parallel-results">
+                <div class="result-progress-step" :class="{ done: minutesStatus === '已生成' }">
+                  <span><el-icon><Document /></el-icon></span>
+                  <div><strong>会议纪要分析</strong><small>{{ minutesStatus }}</small></div>
+                </div>
+                <div class="result-progress-step" :class="{ done: overallSummaryStatus === '已完成' }">
+                  <span><el-icon><CircleCheck /></el-icon></span>
+                  <div><strong>教研总结</strong><small>{{ overallSummaryStatus }}</small></div>
+                </div>
+                <div class="result-progress-step" :class="{ done: allCasesCompleted }">
+                  <span><el-icon><Document /></el-icon></span>
+                  <div><strong>案例小结</strong><small>{{ caseCompletedCount }}/{{ caseResults.length }} 已完成</small></div>
+                </div>
+              </div>
+            </section>
+            <div class="result-progress-arrow">→</div>
+            <section class="result-progress-group followup">
+              <div class="result-progress-group-head"><strong>后续处理</strong></div>
+              <div class="result-progress followup-results">
+                <div class="result-progress-step" :class="{ done: meetingEvaluationStatus === '已生成' }">
+                  <span><el-icon><MagicStick /></el-icon></span>
+                  <div><strong>AI 会议自评</strong><small>{{ meetingEvaluationStatus }}</small></div>
+                </div>
+                <div class="result-progress-step" :class="{ done: archiveStatus === '已完成' }">
+                  <span><el-icon><FolderOpened /></el-icon></span>
+                  <div><strong>会议资料归档</strong><small>{{ archiveStatus }}</small></div>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
 
+        <section id="result-minutes" class="meeting-output-section substep-anchor">
+          <div class="result-section-head"><div><span>01</span><div><h3>会议纪要分析</h3></div></div><el-tag :type="minutesType" effect="plain">{{ minutesStatus }}</el-tag></div>
+          <div v-if="minutesStatus === '已生成' || role === '管理视角'" class="meeting-output-body"><el-input v-if="minutesStatus === '已生成'" v-model="meeting.note" type="textarea" :rows="8" placeholder="会议纪要" /><el-button v-if="role === '管理视角'" type="primary" plain :disabled="recordingStatus !== '转写完成'" :loading="minutesStatus === '生成中'" @click="generateMinutes">{{ minutesStatus === '已生成' ? '重新生成纪要' : 'AI 生成纪要' }}</el-button></div>
+        </section>
+
+        <section id="result-summary" class="overall-result-section substep-anchor" :class="{ locked: recordingStatus !== '转写完成' }">
+          <div class="result-section-head">
+            <div><span>02</span><div><h3>整次教研总结</h3></div></div>
+            <el-tag :type="resultStatusType(overallSummaryStatus)" effect="plain">{{ overallSummaryStatus }}</el-tag>
+          </div>
+          <div class="overall-result-body action-only">
+            <div class="overall-action">
+              <el-button
+                v-if="overallSummaryStatus === '已完成'"
+                plain
+                @click="openResult('整次教研总结', '本次教研围绕幼儿在沙水游戏中的工程问题与协作过程展开。教师形成了先观察、再提问、以证据支持协商的共同策略，并明确了后续实践回访安排。')"
+              >
+                {{ role === '管理视角' ? '查看编辑' : '查看总结' }}
+              </el-button>
+              <el-button
+                v-else-if="role === '管理视角'"
+                type="primary"
+                :disabled="recordingStatus !== '转写完成'"
+                :loading="generatingResult === 'overall'"
+                @click="generateOverallSummary"
+              >
+                生成教研总结
+              </el-button>
+            </div>
+          </div>
+        </section>
+
         <section id="result-cases" class="case-summary-section substep-anchor">
           <div class="result-section-head">
-            <div><span>01</span><div><h3>案例小结</h3><p>每个关联案例分别总结，保留问题、证据、观点与支持策略。</p></div></div>
+            <div><span>03</span><div><h3>案例小结</h3></div></div>
             <strong>{{ caseCompletedCount }}/{{ caseResults.length }} 已完成</strong>
           </div>
 
@@ -856,6 +901,7 @@ const confirmRecord = () => {
                 <el-button
                   v-else-if="role === '管理视角'"
                   type="primary"
+                  :disabled="recordingStatus !== '转写完成'"
                   :loading="generatingResult === `case-${caseItem.id}`"
                   @click="generateCaseSummary(caseItem)"
                 >
@@ -866,52 +912,15 @@ const confirmRecord = () => {
           </div>
         </section>
 
-        <section id="result-summary" class="overall-result-section substep-anchor" :class="{ locked: !allCasesCompleted }">
-          <div class="result-section-head">
-            <div><span>02</span><div><h3>整次教研总结</h3><p>汇总全部案例结论、在线讨论、现场纪要与后续行动。</p></div></div>
-            <el-tag :type="resultStatusType(overallSummaryStatus)" effect="plain">{{ overallSummaryStatus }}</el-tag>
-          </div>
-          <div class="overall-result-body">
-            <div class="result-source-list">
-              <span><el-icon><CircleCheck /></el-icon>{{ caseResults.length }} 份案例小结</span>
-              <span><el-icon><CircleCheck /></el-icon>{{ topics.length }} 个研讨话题</span>
-              <span><el-icon><CircleCheck /></el-icon>录音转写与 AI 会议纪要</span>
-              <span><el-icon><CircleCheck /></el-icon>{{ item.participants }} 位教师参与记录</span>
-            </div>
-            <div class="overall-action">
-              <p v-if="!allCasesCompleted">完成全部案例小结后即可生成教研总结。</p>
-              <p v-else-if="overallSummaryStatus !== '已完成'">资料已齐备，可生成整次教研总结。</p>
-              <p v-else>教研总结已完成，可继续打包本次会议归档资料。</p>
-              <el-button
-                v-if="overallSummaryStatus === '已完成'"
-                plain
-                @click="openResult('整次教研总结', '本次教研围绕幼儿在沙水游戏中的工程问题与协作过程展开。教师形成了先观察、再提问、以证据支持协商的共同策略，并明确了后续实践回访安排。')"
-              >
-                {{ role === '管理视角' ? '查看编辑' : '查看总结' }}
-              </el-button>
-              <el-button
-                v-else-if="role === '管理视角'"
-                type="primary"
-                :disabled="!allCasesCompleted"
-                :loading="generatingResult === 'overall'"
-                @click="generateOverallSummary"
-              >
-                生成教研总结
-              </el-button>
-            </div>
-          </div>
-        </section>
-
         <section id="result-review" class="meeting-output-section evaluation-output substep-anchor">
-          <div class="result-section-head"><div><span>04</span><div><h3>AI 会议自评</h3><p>综合会议纪要、教研总结和参与记录，分析会议质量并形成改进建议。</p></div></div><el-tag :type="meetingEvaluationStatus === '已生成' ? 'success' : meetingEvaluationStatus === '生成中' ? 'warning' : 'info'" effect="plain">{{ meetingEvaluationStatus }}</el-tag></div>
-          <div class="meeting-output-body"><p v-if="meetingEvaluationStatus === '已生成'" class="evaluation-copy">本次教研聚焦明确，教师围绕观察事实展开讨论；建议下一轮增加实践回访的证据对照，持续追踪支持策略的有效性。</p><p v-else>完成会议纪要与教研总结后，即可由 AI 生成会议自评。</p><el-button v-if="role === '管理视角'" type="primary" plain :disabled="minutesStatus !== '已生成' || overallSummaryStatus !== '已完成'" :loading="meetingEvaluationStatus === '生成中'" @click="generateMeetingEvaluation">AI 生成会议自评</el-button></div>
+          <div class="result-section-head"><div><span>04</span><div><h3>AI 会议自评</h3></div></div><el-tag :type="meetingEvaluationStatus === '已生成' ? 'success' : meetingEvaluationStatus === '生成中' ? 'warning' : 'info'" effect="plain">{{ meetingEvaluationStatus }}</el-tag></div>
+          <div v-if="meetingEvaluationStatus === '已生成' || role === '管理视角'" class="meeting-output-body"><p v-if="meetingEvaluationStatus === '已生成'" class="evaluation-copy">本次教研聚焦明确，教师围绕观察事实展开讨论；建议下一轮增加实践回访的证据对照，持续追踪支持策略的有效性。</p><el-button v-if="role === '管理视角'" type="primary" plain :disabled="minutesStatus !== '已生成' || overallSummaryStatus !== '已完成' || !allCasesCompleted" :loading="meetingEvaluationStatus === '生成中'" @click="generateMeetingEvaluation">AI 生成会议自评</el-button></div>
         </section>
 
-        <section id="result-archive" class="report-result-section archive-result-section substep-anchor" :class="{ locked: overallSummaryStatus !== '已完成' }">
+        <section id="result-archive" class="report-result-section archive-result-section substep-anchor" :class="{ locked: !allResultsReadyForArchive }">
           <div class="report-icon"><el-icon><FolderOpened /></el-icon></div>
           <div>
             <h3>本次会议归档</h3>
-            <p>将文字、图片、视频、录音、转写稿、AI 会议纪要、案例小结和教研总结压缩为 ZIP 包。</p>
             <div class="archive-file-types">
               <span><el-icon><Document /></el-icon>文字与文档</span>
               <span><el-icon><PictureFilled /></el-icon>图片</span>
@@ -932,7 +941,7 @@ const confirmRecord = () => {
           <el-button
             v-else-if="role === '管理视角'"
             type="primary"
-            :disabled="overallSummaryStatus !== '已完成'"
+            :disabled="!allResultsReadyForArchive"
             :loading="generatingResult === 'archive'"
             @click="generateArchive"
           >

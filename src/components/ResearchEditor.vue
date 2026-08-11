@@ -2,7 +2,7 @@
 import { computed, reactive, ref } from 'vue'
 import {
   ArrowLeft, MagicStick, DocumentAdd, Calendar, Location, Search,
-  UploadFilled, CircleCheck, InfoFilled, Plus, Delete, Lock, UserFilled,
+  UploadFilled, CircleCheck, Plus, Delete, Lock, UserFilled,
   Picture, Refresh, VideoCamera, Headset, View
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -150,10 +150,10 @@ const restoreCaseCover = () => {
 }
 
 const sections = [
-  { label: '基础信息', desc: '主题、依据与关联案例' },
-  { label: '活动方案', desc: '安排、时间与地点' },
-  { label: '参与设置', desc: '主持人、成员与权限' },
-  { label: '发布预览', desc: '检查并发布研讨' },
+  { label: '基础信息' },
+  { label: '活动方案' },
+  { label: '参与设置' },
+  { label: '发布预览' },
 ]
 
 const generateContent = () => {
@@ -217,23 +217,23 @@ const publish = () => {
     <div class="editor-stage editor-parallel-stage" aria-label="教研并行推进流程">
       <div class="editor-flow-node is-current">
         <span class="editor-flow-index">01</span>
-        <div><strong>教研准备</strong><small>完善主题、方案与成员</small></div>
+        <div><strong>教研准备</strong></div>
       </div>
       <div class="editor-flow-split" aria-hidden="true"></div>
       <div class="editor-flow-branches">
         <div class="editor-flow-node is-pending">
           <span class="editor-flow-index">02A</span>
-          <div><strong>话题广场</strong><small>发布后持续开放</small></div>
+          <div><strong>话题广场</strong></div>
         </div>
         <div class="editor-flow-node is-pending">
           <span class="editor-flow-index">02B</span>
-          <div><strong>现场记录</strong><small>会议资料随时补充</small></div>
+          <div><strong>现场记录</strong></div>
         </div>
       </div>
       <div class="editor-flow-merge" aria-hidden="true"></div>
       <div class="editor-flow-node is-pending">
         <span class="editor-flow-index">03</span>
-        <div><strong>成果沉淀</strong><small>汇总纪要、小结与总结</small></div>
+        <div><strong>成果沉淀</strong></div>
       </div>
     </div>
 
@@ -246,12 +246,8 @@ const publish = () => {
           @click="activeSection = section.label"
         >
           <span>{{ index + 1 }}</span>
-          <div><strong>{{ section.label }}</strong><small>{{ section.desc }}</small></div>
+          <div><strong>{{ section.label }}</strong></div>
         </button>
-        <div class="editor-tip">
-          <el-icon><InfoFilled /></el-icon>
-          <p>发布后将进入“在线研讨”阶段。教师可以发表话题并参与回复。</p>
-        </div>
       </aside>
 
       <main class="form-panel">
