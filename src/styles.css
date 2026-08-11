@@ -171,14 +171,14 @@ button { cursor: pointer; }
 .editor-flow-branches::after { bottom: 0; }
 .editor-flow-branches .editor-flow-node { padding: 0 9px; }
 
-.parallel-status-mini { width: 270px; height: 56px; position: relative; }
-.parallel-mini-arcs { position: absolute; z-index: 0; inset: 0; width: 270px; height: 56px; overflow: visible; }
+.parallel-status-mini { width: 270px; height: 68px; position: relative; }
+.parallel-mini-arcs { position: absolute; z-index: 0; inset: 0; width: 270px; height: 68px; overflow: visible; }
 .parallel-mini-arcs path { fill: none; stroke: #b9cde5; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .parallel-mini-node { z-index: 1; display: grid; justify-items: center; align-content: center; gap: 3px; color: #a2afbf; font-size: 8px; line-height: 1; white-space: nowrap; position: absolute; width: 50px; min-height: 29px; }
 .parallel-status-mini > .parallel-mini-node:nth-of-type(2) { left: 82px; top: 0; }
-.parallel-status-mini > .parallel-mini-node:nth-of-type(3) { left: 82px; top: 28px; }
-.parallel-status-mini > .parallel-mini-node:first-of-type { left: -7px; top: 14px; }
-.parallel-status-mini > .parallel-mini-node:last-of-type { right: -7px; top: 14px; }
+.parallel-status-mini > .parallel-mini-node:nth-of-type(3) { left: 82px; top: 40px; }
+.parallel-status-mini > .parallel-mini-node:first-of-type { left: -7px; top: 20px; }
+.parallel-status-mini > .parallel-mini-node:last-of-type { right: -7px; top: 20px; }
 .parallel-mini-node i { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border: 1px solid #d4dfed; border-radius: 50%; background: #fff; color: #9eadbf; font-style: normal; font-size: 8px; font-weight: 700; }
 .parallel-mini-node.done { color: #4c78c3; font-weight: 600; }
 .parallel-mini-node.done i { color: #fff; background: #5a8ee9; border-color: #5a8ee9; }
