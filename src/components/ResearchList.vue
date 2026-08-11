@@ -156,8 +156,8 @@ const hasResults = (item) => item.status === '已完成' || item.stage >= 4
               <svg class="parallel-mini-arcs" viewBox="0 0 270 56" preserveAspectRatio="none" aria-hidden="true">
                 <path d="M 18 28 C 49 28, 60 12, 107 12" />
                 <path d="M 18 28 C 49 28, 60 44, 107 44" />
-                <path d="M 147 12 C 195 12, 206 28, 252 28" />
-                <path d="M 147 44 C 195 44, 206 28, 252 28" />
+                <path d="M 107 12 C 180 12, 202 28, 252 28" />
+                <path d="M 107 44 C 180 44, 202 28, 252 28" />
               </svg>
               <div class="parallel-mini-node" :class="{ done: isPrepared(item) }">
                 <i>{{ isPrepared(item) ? '✓' : '1' }}</i><span>准备</span>

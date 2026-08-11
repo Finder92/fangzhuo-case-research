@@ -351,13 +351,21 @@ button { cursor: pointer; }
 .meta-member-entry:hover { color: var(--primary-dark); }
 .detail-workspace { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 18px; align-items: start; margin-top: 16px; }
 .detail-module-content { min-width: 0; }
-.detail-tabs { position: sticky; top: 86px; display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; }
-.detail-tabs button { min-height: 46px; display: flex; align-items: center; justify-content: flex-start; padding: 0 16px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
-.detail-tabs button.active { border-color: #b8d0ee; background: #f6faff; }
+.detail-tabs { position: sticky; top: 86px; display: flex; flex-direction: column; gap: 3px; margin: 0; padding: 14px 12px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; box-shadow: 0 8px 22px rgba(38, 65, 104, .04); }
+.module-nav-head { display: grid; gap: 4px; padding: 3px 8px 13px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+.module-nav-head span { color: #9aa6b6; font-size: 9px; }
+.module-nav-head strong { color: var(--ink); font-size: 14px; }
+.detail-tabs button { position: relative; min-height: 62px; display: grid; grid-template-columns: 30px minmax(0, 1fr); align-items: center; gap: 9px; padding: 8px; border: 0; border-radius: 9px; background: transparent; text-align: left; }
+.detail-tabs button:not(:last-child)::before { content: ''; position: absolute; left: 22px; top: 42px; bottom: -13px; width: 1px; background: #dfe7f1; }
+.detail-tabs button.active { border-color: transparent; background: #f1f6fd; }
 .detail-tabs button.active::after { display: none; }
-.detail-tabs button span { margin-left: auto; }
-.detail-tabs button:disabled, .detail-tabs button.disabled { color: #b9c2ce; cursor: not-allowed; opacity: .68; }
-.detail-tabs button:disabled::after { display: none; }
+.detail-tabs .module-step-index { position: relative; z-index: 1; width: 25px; height: 25px; display: grid; place-items: center; margin: 0; border: 1px solid #d4dfec; border-radius: 50%; color: #8c9bad; background: #fff; font-size: 8px; font-weight: 700; }
+.detail-tabs button.active .module-step-index { color: #fff; border-color: var(--primary); background: var(--primary); box-shadow: 0 0 0 3px #e8f1fc; }
+.detail-tabs .module-step-copy { display: grid; gap: 4px; min-width: 0; margin: 0; }
+.detail-tabs .module-step-copy strong { color: #45566d; font-size: 11px; font-weight: 600; }
+.detail-tabs .module-step-copy small { overflow: hidden; color: #98a4b4; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.detail-tabs button.active .module-step-copy strong { color: var(--primary-dark); }
+.substep-anchor { scroll-margin-top: 94px; }
 .discussion-layout { display: grid; grid-template-columns: minmax(600px, 1fr) 280px; gap: 18px; align-items: start; margin-top: 0; }
 .topics-panel { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
 .topics-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px; border-bottom: 1px solid var(--line); }
@@ -736,7 +744,13 @@ button { cursor: pointer; }
   .detail-workspace { display: block; margin-top: 0; }
   .detail-tabs { position: sticky; top: 58px; z-index: 12; flex-direction: row; height: 46px; gap: 22px; margin: 0 -13px; padding: 0 13px; overflow-x: auto; border-right: 0; border-left: 0; border-radius: 0; scrollbar-width: none; }
   .detail-tabs::-webkit-scrollbar { display: none; }
-  .detail-tabs button { flex: 0 0 auto; font-size: 12px; white-space: nowrap; }
+  .module-nav-head { display: none; }
+  .detail-tabs button { display: flex; flex: 0 0 auto; min-height: 46px; padding: 0 2px; background: transparent; font-size: 12px; white-space: nowrap; }
+  .detail-tabs button::before, .detail-tabs .module-step-index, .detail-tabs .module-step-copy small { display: none !important; }
+  .detail-tabs .module-step-copy { display: block; }
+  .detail-tabs .module-step-copy strong { font-size: 12px; white-space: nowrap; }
+  .detail-tabs button.active { background: transparent; }
+  .detail-tabs button.active .module-step-copy strong { color: var(--primary-dark); }
   .discussion-layout { margin-top: 11px; }
   .discussion-side { display: none; }
   .topics-panel { overflow: visible; border: 0; background: transparent; }

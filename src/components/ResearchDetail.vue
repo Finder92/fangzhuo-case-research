@@ -147,6 +147,38 @@ const tabs = computed(() => (
         { label: '成果文件', minStage: 2 },
       ]
 ))
+const activeSubStep = ref('')
+const subStepsByModule = {
+  '教研主题': [
+    { id: 'theme-goal', label: '教研目标', desc: '明确本次研究问题' },
+    { id: 'theme-plan', label: '研讨安排', desc: '查看活动推进方式' },
+    { id: 'theme-materials', label: '准备素材', desc: '预览发布前上传资料' },
+    { id: 'theme-cases', label: '关联案例', desc: '查看本次研究依据' },
+  ],
+  '话题广场': [
+    { id: 'topic-list', label: '话题列表', desc: '发表话题与参与回复' },
+    { id: 'topic-activity', label: '活跃分析', desc: '查看成员参与情况' },
+    { id: 'topic-guide', label: '研讨引导', desc: '辅助主持人推进讨论' },
+  ],
+  '现场记录': [
+    { id: 'record-info', label: '会议信息', desc: '时间与实际出勤' },
+    { id: 'record-audio', label: '录音及文档', desc: '上传并完成录音转写' },
+    { id: 'record-media', label: '照片与视频', desc: '补充现场影像证据' },
+    { id: 'record-confirm', label: '资料确认', desc: '检查并提交现场资料' },
+  ],
+  '成果文件': [
+    { id: 'result-minutes', label: '会议纪要分析', desc: 'AI 生成并编辑纪要' },
+    { id: 'result-cases', label: '案例小结', desc: '每个案例独立总结' },
+    { id: 'result-summary', label: '教研总结', desc: '汇总整次教研结论' },
+    { id: 'result-review', label: 'AI 会议自评', desc: '分析会议质量与改进点' },
+    { id: 'result-archive', label: '会议资料归档', desc: '打包保存全部资料' },
+  ],
+}
+const currentSubSteps = computed(() => subStepsByModule[activeTab.value] || [])
+const scrollToSubStep = (id) => {
+  activeSubStep.value = id
+  nextTick(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+}
 const stageTrackItems = computed(() => (
   props.role === '教师视角'
     ? ['教研主题', '话题广场', '成果文件']
@@ -186,6 +218,8 @@ const memberActivity = (member) => {
 const switchTab = (tab) => {
   if (currentStage.value < tab.minStage) return
   activeTab.value = tab.label
+  activeSubStep.value = subStepsByModule[tab.label]?.[0]?.id || ''
+  nextTick(() => document.querySelector('.detail-module-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
 const switchStageModule = (label) => {
   const tab = tabs.value.find((item) => item.label === label)
@@ -517,23 +551,25 @@ const confirmRecord = () => {
 
     <div class="detail-workspace">
     <nav class="detail-tabs" aria-label="教研模块导航">
+      <div class="module-nav-head">
+        <span>当前模块</span>
+        <strong>{{ activeTab === '成果文件' ? '成果沉淀' : activeTab }}</strong>
+      </div>
       <button
-        v-for="tab in tabs"
-        :key="tab.label"
-        :class="{ active: activeTab === tab.label, disabled: currentStage < tab.minStage }"
-        :disabled="currentStage < tab.minStage"
-        :title="currentStage < tab.minStage ? '尚未进入此流程节点' : ''"
-        @click="switchTab(tab)"
+        v-for="(step, index) in currentSubSteps"
+        :key="step.id"
+        :class="{ active: activeSubStep === step.id || (!activeSubStep && index === 0) }"
+        @click="scrollToSubStep(step.id)"
       >
-        {{ tab.label }}
-        <span v-if="tab.label === '话题广场'">{{ topics.length }}</span>
+        <span class="module-step-index">{{ String(index + 1).padStart(2, '0') }}</span>
+        <span class="module-step-copy"><strong>{{ step.label }}</strong><small>{{ step.desc }}</small></span>
       </button>
     </nav>
 
     <section class="detail-module-content">
 
     <div v-if="activeTab === '话题广场'" class="discussion-layout">
-      <main class="topics-panel">
+      <main id="topic-list" class="topics-panel substep-anchor">
         <div class="topics-head">
           <div><h2>研讨话题</h2><p>共 {{ topics.length }} 个话题、{{ totalReplies }} 条回复</p></div>
           <el-button
@@ -565,7 +601,7 @@ const confirmRecord = () => {
       </main>
 
       <aside class="discussion-side">
-        <div class="side-card progress-card">
+        <div id="topic-activity" class="side-card progress-card substep-anchor">
           <div class="card-head"><h3>研讨活跃度</h3><span>良好</span></div>
           <div class="ring"><strong>78</strong><span>活跃指数</span></div>
           <dl>
@@ -574,7 +610,7 @@ const confirmRecord = () => {
             <div><dt>回复</dt><dd>{{ totalReplies }}</dd></div>
           </dl>
         </div>
-        <div class="side-card">
+        <div id="topic-guide" class="side-card substep-anchor">
           <h3>研讨引导建议</h3>
           <ul class="guide-list">
             <li><el-icon><Star /></el-icon><span>已有多个观点涉及“介入时机”，可置顶形成焦点。</span></li>
@@ -588,16 +624,16 @@ const confirmRecord = () => {
 
     <div v-else-if="activeTab === '教研主题'" class="overview-grid">
       <div class="overview-main">
-        <h2>教研目标</h2>
+        <h2 id="theme-goal" class="substep-anchor">教研目标</h2>
         <p>基于小六班连续三周的沙水游戏观察，幼儿多次尝试修复沟渠坍塌，但在结构加固、材料选择与同伴协作方面仍存在持续探究空间。</p>
-        <h2>研讨安排</h2>
+        <h2 id="theme-plan" class="substep-anchor">研讨安排</h2>
         <ol>
           <li>案例回看：聚焦关键片段，描述幼儿行为事实。</li>
           <li>话题广场：围绕介入时机与支持方式发表话题。</li>
           <li>现场共研：形成可验证的支持策略。</li>
           <li>实践回访：记录策略实施效果并完成小结。</li>
         </ol>
-        <section class="preparation-files">
+        <section id="theme-materials" class="preparation-files substep-anchor">
           <div class="preparation-files-head">
             <div>
               <h2>准备阶段上传的文件</h2>
@@ -633,7 +669,7 @@ const confirmRecord = () => {
           </div>
         </section>
       </div>
-      <div class="overview-side">
+      <div id="theme-cases" class="overview-side substep-anchor">
         <h3>关联案例</h3>
         <div class="case-file"><el-icon><Document /></el-icon><div><strong>沙水区连续观察记录</strong><span>包含 3 段视频、12 张图片</span></div></div>
         <div class="case-file"><el-icon><Document /></el-icon><div><strong>幼儿对话与作品记录</strong><span>PDF · 8.4 MB</span></div></div>
@@ -642,7 +678,7 @@ const confirmRecord = () => {
 
     <div v-else-if="activeTab === '现场记录'" class="record-layout">
       <main class="record-main">
-        <div class="section-title">
+        <div id="record-info" class="section-title substep-anchor">
           <div><h2>现场记录</h2><p>归档线下会议资料，录音转写后由 AI 生成可编辑会议纪要。</p></div>
           <el-tag :type="currentStage >= 4 ? 'success' : 'warning'">{{ currentStage >= 4 ? '已归档' : '待完善' }}</el-tag>
         </div>
@@ -654,7 +690,7 @@ const confirmRecord = () => {
           </div>
 
           <div class="record-files">
-            <article class="record-file-card">
+            <article id="record-audio" class="record-file-card substep-anchor">
               <span class="record-file-icon audio"><el-icon><Headset /></el-icon></span>
               <div class="record-file-main">
                 <div><strong>上传录音及文档</strong><el-tag :type="recordingType" size="small">{{ recordingStatus }}</el-tag></div>
@@ -670,7 +706,7 @@ const confirmRecord = () => {
               </div>
             </article>
 
-            <article class="record-file-card">
+            <article id="record-media" class="record-file-card substep-anchor">
               <span class="record-file-icon photo"><el-icon><PictureFilled /></el-icon></span>
               <div class="record-file-main">
                 <div><strong>现场照片与视频</strong><el-tag type="info" size="small">已上传 6 项</el-tag></div>
@@ -720,7 +756,7 @@ const confirmRecord = () => {
           </section>
         </el-form>
 
-        <div class="record-footer">
+        <div id="record-confirm" class="record-footer substep-anchor">
           <span>现场资料保存后，可在“成果文件”中生成 AI 会议纪要与后续成果。</span>
           <el-button
             v-if="role === '管理视角' && currentStage < 4"
@@ -767,8 +803,8 @@ const confirmRecord = () => {
           </el-tag>
         </div>
 
-        <section class="meeting-output-section">
-          <div class="result-section-head"><div><span>01</span><div><h3>AI 会议纪要</h3><p>录音转写完成后生成 Markdown 初稿，主持人可继续编辑。</p></div></div><el-tag :type="minutesType" effect="plain">{{ minutesStatus }}</el-tag></div>
+        <section id="result-minutes" class="meeting-output-section substep-anchor">
+          <div class="result-section-head"><div><span>01</span><div><h3>会议纪要分析</h3><p>根据录音转写由 AI 生成结构化纪要，主持人可继续编辑。</p></div></div><el-tag :type="minutesType" effect="plain">{{ minutesStatus }}</el-tag></div>
           <div class="meeting-output-body"><el-input v-if="minutesStatus === '已生成'" v-model="meeting.note" type="textarea" :rows="8" placeholder="AI 生成后可编辑会议纪要" /><el-alert v-else title="先在“现场记录”上传录音并完成转写，即可生成会议纪要。" type="info" :closable="false" show-icon /><el-button v-if="role === '管理视角'" type="primary" plain :disabled="recordingStatus !== '转写完成'" :loading="minutesStatus === '生成中'" @click="generateMinutes">{{ minutesStatus === '已生成' ? '重新生成纪要' : 'AI 生成纪要' }}</el-button></div>
         </section>
 
@@ -789,7 +825,7 @@ const confirmRecord = () => {
           </div>
         </div>
 
-        <section class="case-summary-section">
+        <section id="result-cases" class="case-summary-section substep-anchor">
           <div class="result-section-head">
             <div><span>01</span><div><h3>案例小结</h3><p>每个关联案例分别总结，保留问题、证据、观点与支持策略。</p></div></div>
             <strong>{{ caseCompletedCount }}/{{ caseResults.length }} 已完成</strong>
@@ -830,7 +866,7 @@ const confirmRecord = () => {
           </div>
         </section>
 
-        <section class="overall-result-section" :class="{ locked: !allCasesCompleted }">
+        <section id="result-summary" class="overall-result-section substep-anchor" :class="{ locked: !allCasesCompleted }">
           <div class="result-section-head">
             <div><span>02</span><div><h3>整次教研总结</h3><p>汇总全部案例结论、在线讨论、现场纪要与后续行动。</p></div></div>
             <el-tag :type="resultStatusType(overallSummaryStatus)" effect="plain">{{ overallSummaryStatus }}</el-tag>
@@ -866,12 +902,12 @@ const confirmRecord = () => {
           </div>
         </section>
 
-        <section class="meeting-output-section evaluation-output">
-          <div class="result-section-head"><div><span>04</span><div><h3>AI 会议评价</h3><p>综合会议纪要、教研总结和参与记录，形成可执行的改进建议。</p></div></div><el-tag :type="meetingEvaluationStatus === '已生成' ? 'success' : meetingEvaluationStatus === '生成中' ? 'warning' : 'info'" effect="plain">{{ meetingEvaluationStatus }}</el-tag></div>
-          <div class="meeting-output-body"><p v-if="meetingEvaluationStatus === '已生成'" class="evaluation-copy">本次教研聚焦明确，教师围绕观察事实展开讨论；建议下一轮增加实践回访的证据对照，持续追踪支持策略的有效性。</p><p v-else>完成会议纪要与教研总结后，即可由 AI 生成会议评价。</p><el-button v-if="role === '管理视角'" type="primary" plain :disabled="minutesStatus !== '已生成' || overallSummaryStatus !== '已完成'" :loading="meetingEvaluationStatus === '生成中'" @click="generateMeetingEvaluation">AI 生成会议评价</el-button></div>
+        <section id="result-review" class="meeting-output-section evaluation-output substep-anchor">
+          <div class="result-section-head"><div><span>04</span><div><h3>AI 会议自评</h3><p>综合会议纪要、教研总结和参与记录，分析会议质量并形成改进建议。</p></div></div><el-tag :type="meetingEvaluationStatus === '已生成' ? 'success' : meetingEvaluationStatus === '生成中' ? 'warning' : 'info'" effect="plain">{{ meetingEvaluationStatus }}</el-tag></div>
+          <div class="meeting-output-body"><p v-if="meetingEvaluationStatus === '已生成'" class="evaluation-copy">本次教研聚焦明确，教师围绕观察事实展开讨论；建议下一轮增加实践回访的证据对照，持续追踪支持策略的有效性。</p><p v-else>完成会议纪要与教研总结后，即可由 AI 生成会议自评。</p><el-button v-if="role === '管理视角'" type="primary" plain :disabled="minutesStatus !== '已生成' || overallSummaryStatus !== '已完成'" :loading="meetingEvaluationStatus === '生成中'" @click="generateMeetingEvaluation">AI 生成会议自评</el-button></div>
         </section>
 
-        <section class="report-result-section archive-result-section" :class="{ locked: overallSummaryStatus !== '已完成' }">
+        <section id="result-archive" class="report-result-section archive-result-section substep-anchor" :class="{ locked: overallSummaryStatus !== '已完成' }">
           <div class="report-icon"><el-icon><FolderOpened /></el-icon></div>
           <div>
             <h3>本次会议归档</h3>
