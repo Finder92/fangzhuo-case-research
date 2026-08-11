@@ -153,11 +153,11 @@ const hasResults = (item) => item.status === '已完成' || item.stage >= 4
           <div class="stage-cell">
             <div class="status-line"><el-tag :type="tagType(item.status)" effect="light">{{ item.status }}</el-tag><b>{{ item.progress }}%</b></div>
             <div class="parallel-status-mini" title="话题广场与现场记录可并行推进">
-              <svg class="parallel-mini-arcs" viewBox="0 0 270 68" preserveAspectRatio="none" aria-hidden="true">
-                <path d="M 18 28 C 49 28, 60 8, 107 8" />
-                <path d="M 18 28 C 49 28, 60 48, 107 48" />
-                <path d="M 107 8 C 180 8, 202 28, 252 28" />
-                <path d="M 107 48 C 180 48, 202 28, 252 28" />
+              <svg class="parallel-mini-lines" viewBox="0 0 270 68" preserveAspectRatio="none" aria-hidden="true">
+                <polyline points="18,28 48,28 74,8 107,8" />
+                <polyline points="18,28 48,28 74,48 107,48" />
+                <polyline points="107,8 178,8 204,28 252,28" />
+                <polyline points="107,48 178,48 204,28 252,28" />
               </svg>
               <div class="parallel-mini-node" :class="{ done: isPrepared(item) }">
                 <i>{{ isPrepared(item) ? '✓' : '1' }}</i><span>准备</span>

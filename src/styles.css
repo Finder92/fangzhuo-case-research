@@ -172,8 +172,8 @@ button { cursor: pointer; }
 .editor-flow-branches .editor-flow-node { padding: 0 9px; }
 
 .parallel-status-mini { width: 270px; height: 68px; position: relative; }
-.parallel-mini-arcs { position: absolute; z-index: 0; inset: 0; width: 270px; height: 68px; overflow: visible; }
-.parallel-mini-arcs path { fill: none; stroke: #b9cde5; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.parallel-mini-lines { position: absolute; z-index: 0; inset: 0; width: 270px; height: 68px; overflow: visible; }
+.parallel-mini-lines polyline { fill: none; stroke: #b9cde5; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 .parallel-mini-node { z-index: 1; display: grid; justify-items: center; align-content: center; gap: 3px; color: #a2afbf; font-size: 8px; line-height: 1; white-space: nowrap; position: absolute; width: 50px; min-height: 29px; }
 .parallel-status-mini > .parallel-mini-node:nth-of-type(2) { left: 82px; top: 0; }
 .parallel-status-mini > .parallel-mini-node:nth-of-type(3) { left: 82px; top: 40px; }
