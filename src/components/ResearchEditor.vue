@@ -40,6 +40,7 @@ const aiSuggestions = [
   { title: '游戏中的“隐形支架”：教师如何从替幼儿解决转向支持协商', points: ['聚焦教师直接参与、材料投放和提问方式带来的不同结果。', '通过案例回看与教师经验对照，沉淀可验证的支持策略。', '以实践回访记录策略实施后的幼儿变化。'] },
 ]
 const form = reactive({
+  researchType: props.draft?.researchType || 'case',
   title: props.draft?.title || '',
   scope: props.draft?.scope || '园级教研',
   basis: props.draft?.basis || '',
@@ -91,6 +92,25 @@ const currentHost = computed(() => teacherDirectory.find((teacher) => teacher.na
   role: '主持人',
   color: '#5d86c8',
 })
+const hasCases = computed(() => form.researchType === 'case')
+
+const setResearchType = (type) => {
+  if (form.researchType === type) return
+  form.researchType = type
+  if (type === 'case') {
+    form.caseCount = form.caseCount || 2
+    if (form.coverSource !== '手动上传') {
+      form.cover = `${import.meta.env.BASE_URL}covers/sand-water.svg`
+      form.coverSource = '关联案例首图'
+    }
+  } else {
+    form.caseCount = 0
+    if (form.coverSource !== '手动上传') {
+      form.cover = `${import.meta.env.BASE_URL}covers/reflection.svg`
+      form.coverSource = '系统专题封面'
+    }
+  }
+}
 
 const openMemberPicker = (mode) => {
   pickerMode.value = mode
@@ -144,9 +164,11 @@ const handleCoverChange = (uploadFile) => {
 }
 
 const restoreCaseCover = () => {
-  form.cover = `${import.meta.env.BASE_URL}covers/sand-water.svg`
-  form.coverSource = '关联案例首图'
-  ElMessage.success('已恢复使用关联案例首图')
+  form.cover = hasCases.value
+    ? `${import.meta.env.BASE_URL}covers/sand-water.svg`
+    : `${import.meta.env.BASE_URL}covers/reflection.svg`
+  form.coverSource = hasCases.value ? '关联案例首图' : '系统专题封面'
+  ElMessage.success(hasCases.value ? '已恢复使用关联案例首图' : '已恢复使用系统专题封面')
 }
 
 const sections = [
@@ -195,6 +217,7 @@ const removePresetTopic = (id) => {
 
 const publish = () => {
   if (!form.title.trim()) return ElMessage.warning('请先填写教研主题')
+  if (hasCases.value && !form.caseCount) return ElMessage.warning('案例教研请至少关联 1 个案例')
   emit('saved', { ...form })
   ElMessage.success('教研主题已发布，教师现在可以参与话题讨论')
 }
@@ -248,6 +271,16 @@ const publish = () => {
         <div v-if="activeSection === '基础信息'" class="form-section">
           <div class="section-title"><div><h2>基础信息</h2></div></div>
           <el-form label-position="top">
+            <el-form-item label="教研类型" required>
+              <div class="research-type-picker" role="radiogroup" aria-label="教研类型">
+                <button type="button" :class="{ active: form.researchType === 'case' }" role="radio" :aria-checked="form.researchType === 'case'" @click="setResearchType('case')">
+                  <span>01</span><div><strong>案例教研</strong><small>选择一个或多个真实案例，围绕案例证据开展研讨</small></div><i></i>
+                </button>
+                <button type="button" :class="{ active: form.researchType === 'topic' }" role="radio" :aria-checked="form.researchType === 'topic'" @click="setResearchType('topic')">
+                  <span>02</span><div><strong>专题教研</strong><small>不关联案例，直接围绕课程、管理或教师共性问题开展研讨</small></div><i></i>
+                </button>
+              </div>
+            </el-form-item>
             <el-form-item label="教研主题" required>
               <div class="field-with-action"><el-input v-model="form.title" maxlength="50" show-word-limit placeholder="输入一个清晰、具体、可研讨的问题" /><el-button type="primary" plain :icon="MagicStick" :loading="generating" @click="generateContent">AI 生成</el-button></div>
             </el-form-item>
@@ -259,8 +292,11 @@ const publish = () => {
                   <el-option label="班级教研" value="班级教研" />
                 </el-select>
               </el-form-item>
-              <el-form-item label="关联案例">
-                <el-button class="select-case" :icon="DocumentAdd">选择研讨案例 <span>已选择 2 个</span></el-button>
+              <el-form-item v-if="hasCases" label="关联案例" required>
+                <el-button class="select-case" :icon="DocumentAdd">选择研讨案例 <span>已选择 {{ form.caseCount }} 个</span></el-button>
+              </el-form-item>
+              <el-form-item v-else label="研讨依据">
+                <div class="topic-research-basis"><el-icon><DocumentAdd /></el-icon><span><strong>无需选择案例</strong><small>主题、目标和准备素材将作为本次教研依据</small></span></div>
               </el-form-item>
             </div>
             <div class="research-cover-field">
@@ -273,7 +309,7 @@ const publish = () => {
                   <span><el-icon><Picture /></el-icon>{{ form.coverSource }}</span>
                 </div>
                 <div class="cover-editor-info">
-                  <strong>{{ form.coverSource === '手动上传' ? '已使用自定义封面' : '已自动选取案例图片' }}</strong>
+                  <strong>{{ form.coverSource === '手动上传' ? '已使用自定义封面' : (hasCases ? '已自动选取案例图片' : '已使用系统专题封面') }}</strong>
                   <div>
                     <el-upload
                       action="#"
@@ -284,7 +320,7 @@ const publish = () => {
                     >
                       <el-button type="primary" plain :icon="UploadFilled">{{ form.coverSource === '手动上传' ? '重新上传' : '上传封面' }}</el-button>
                     </el-upload>
-                    <el-button v-if="form.coverSource === '手动上传'" :icon="Refresh" @click="restoreCaseCover">恢复案例首图</el-button>
+                    <el-button v-if="form.coverSource === '手动上传'" :icon="Refresh" @click="restoreCaseCover">{{ hasCases ? '恢复案例首图' : '恢复系统封面' }}</el-button>
                   </div>
                 </div>
               </div>
@@ -384,10 +420,10 @@ const publish = () => {
         <div v-else class="form-section publish-preview">
           <div class="preview-check"><el-icon><CircleCheck /></el-icon><h2>发布前检查</h2></div>
           <div class="preview-card">
-            <span>{{ form.scope }}</span>
+            <span>{{ form.researchType === 'case' ? '案例教研' : '专题教研' }} · {{ form.scope }}</span>
             <h3>{{ form.title || '尚未填写教研主题' }}</h3>
             <p>{{ form.basis || '填写教研目标后将在这里显示摘要。' }}</p>
-            <dl><div><dt>主持人</dt><dd>{{ form.host }}</dd></div><div><dt>研讨时间</dt><dd>{{ form.date }}</dd></div><div><dt>参与教师</dt><dd>{{ form.teachers.length }} 人</dd></div><div><dt>预设话题</dt><dd>{{ form.preTopics.length }} 个</dd></div></dl>
+            <dl><div><dt>主持人</dt><dd>{{ form.host }}</dd></div><div><dt>研讨时间</dt><dd>{{ form.date }}</dd></div><div><dt>{{ hasCases ? '关联案例' : '教研类型' }}</dt><dd>{{ hasCases ? `${form.caseCount} 个` : '无案例' }}</dd></div><div><dt>参与教师</dt><dd>{{ form.teachers.length }} 人</dd></div></dl>
           </div>
           <el-button type="primary" size="large" @click="publish">确认发布研讨</el-button>
         </div>
@@ -419,7 +455,7 @@ const publish = () => {
 
     <el-dialog v-model="aiSuggestionVisible" width="1080px" top="7vh" class="ai-suggestion-dialog">
       <template #header><div class="ai-suggestion-title"><span><el-icon><MagicStick /></el-icon></span><div><h2>AI 教研建议</h2></div></div></template>
-      <div class="ai-suggestion-layout"><aside><strong>生成依据</strong><p>2 个关联案例</p><p>3 段观察视频</p><p>12 条关键观察</p></aside><main><article v-for="(suggestion, index) in aiSuggestions" :key="suggestion.title" :class="{ selected: selectedSuggestion === index }"><header><span>方案 {{ String(index + 1).padStart(2, '0') }}</span><el-button type="primary" plain @click="applySuggestion(index)">选用此方案</el-button></header><h3>{{ suggestion.title }}</h3><ol><li v-for="point in suggestion.points" :key="point">{{ point }}</li></ol></article></main></div>
+      <div class="ai-suggestion-layout"><aside><strong>生成依据</strong><template v-if="hasCases"><p>{{ form.caseCount }} 个关联案例</p><p>3 段观察视频</p><p>12 条关键观察</p></template><template v-else><p>教研主题与目标</p><p>{{ uploadedMaterials.length }} 份准备素材</p><p>{{ form.preTopics.length }} 个预设话题</p></template></aside><main><article v-for="(suggestion, index) in aiSuggestions" :key="suggestion.title" :class="{ selected: selectedSuggestion === index }"><header><span>方案 {{ String(index + 1).padStart(2, '0') }}</span><el-button type="primary" plain @click="applySuggestion(index)">选用此方案</el-button></header><h3>{{ suggestion.title }}</h3><ol><li v-for="point in suggestion.points" :key="point">{{ point }}</li></ol></article></main></div>
       <template #footer><el-button @click="aiSuggestionVisible = false">暂不使用</el-button></template>
     </el-dialog>
 

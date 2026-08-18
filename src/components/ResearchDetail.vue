@@ -14,6 +14,7 @@ const props = defineProps({
   role: { type: String, default: '管理视角' },
 })
 const emit = defineEmits(['back', 'status-change'])
+const hasCases = computed(() => props.item.researchType !== 'topic')
 
 const currentStage = ref(props.item.stage)
 const currentStatus = ref(props.item.status)
@@ -36,7 +37,9 @@ const replyText = ref('')
 const topics = ref(structuredClone(seedTopics).map((topic, index) => ({
   ...topic,
   preset: index === 0,
-  scope: index === 0
+  scope: !hasCases.value
+    ? '整场教研'
+    : index === 0
     ? '案例一：沙水区沟渠连续坍塌'
     : index === 1
       ? '案例二：同伴协作中的材料争议'
@@ -68,21 +71,28 @@ const participants = reactive([
 })))
 const recordingStatus = ref(currentStage.value >= 4 ? '转写完成' : '待上传')
 const recordingFileName = ref(
-  currentStage.value >= 4 ? '沙水游戏专题教研现场录音.m4a' : '',
+  currentStage.value >= 4 ? (hasCases.value ? '沙水游戏专题教研现场录音.m4a' : '绘本表演支持策略专题教研录音.m4a') : '',
 )
 const meetingDocumentName = ref('会议讨论要点与分组记录.docx')
 const minutesStatus = ref(currentStage.value >= 4 ? '已生成' : '待生成')
 const meetingEvaluationStatus = ref('待生成')
 const filePreviewVisible = ref(false)
 const previewFile = ref(null)
-const previewCover = `${import.meta.env.BASE_URL}covers/sand-water.svg`
-const preparationFiles = [
+const previewCover = props.item.cover || `${import.meta.env.BASE_URL}covers/sand-water.svg`
+const casePreparationFiles = [
   { id: 'prepare-video', category: 'video', name: '沙水游戏连续观察片段.mp4', extension: 'MP4', size: '86.4 MB', source: '观察案例', icon: VideoCamera },
   { id: 'prepare-document-1', category: 'document', name: '沙水游戏观察记录汇编.pdf', extension: 'PDF', size: '8.4 MB', source: '观察记录', icon: Document },
   { id: 'prepare-document-2', category: 'document', name: '教研活动方案与提问单.docx', extension: 'DOCX', size: '1.2 MB', source: '活动方案', icon: Document },
   { id: 'prepare-audio', category: 'audio', name: '前期教师访谈录音.m4a', extension: 'M4A', size: '18.6 MB', source: '访谈素材', icon: Headset },
   { id: 'prepare-image', category: 'image', name: '沙水区沟渠现场照片.jpg', extension: 'JPG', size: '3.8 MB', source: '观察案例', icon: PictureFilled },
 ]
+const topicPreparationFiles = [
+  { id: 'topic-document-1', category: 'document', name: '绘本表演游戏教师困惑收集.pdf', extension: 'PDF', size: '2.6 MB', source: '前期调研', icon: Document },
+  { id: 'topic-document-2', category: 'document', name: '专题教研活动方案与提问单.docx', extension: 'DOCX', size: '1.1 MB', source: '活动方案', icon: Document },
+  { id: 'topic-video', category: 'video', name: '教师介入方式对照片段.mp4', extension: 'MP4', size: '48.2 MB', source: '准备素材', icon: VideoCamera },
+  { id: 'topic-audio', category: 'audio', name: '教研前教师访谈录音.m4a', extension: 'M4A', size: '16.3 MB', source: '前期访谈', icon: Headset },
+]
+const preparationFiles = computed(() => hasCases.value ? casePreparationFiles : topicPreparationFiles)
 const preparationFileGroups = computed(() => ([
   { key: 'video', label: '视频', icon: VideoCamera },
   { key: 'document', label: '文档', icon: Document },
@@ -90,10 +100,10 @@ const preparationFileGroups = computed(() => ([
   { key: 'image', label: '图片', icon: PictureFilled },
 ].map((group) => ({
   ...group,
-  files: preparationFiles.filter((file) => file.category === group.key),
+  files: preparationFiles.value.filter((file) => file.category === group.key),
 })).filter((group) => group.files.length)))
 const audioWave = [20, 34, 25, 48, 30, 58, 38, 24, 46, 68, 40, 30, 54, 37, 62, 28, 44, 34, 56, 42, 24, 50, 32, 45, 25, 38, 56, 30, 43, 22, 36, 51]
-const caseResults = reactive([
+const caseResults = reactive(hasCases.value ? [
   {
     id: 1,
     title: '沙水区沟渠连续坍塌：幼儿如何发现并修复结构问题',
@@ -116,7 +126,7 @@ const caseResults = reactive([
     status: props.item.status === '已完成' ? '已完成' : '待生成',
     summary: '幼儿的争议主要集中在材料归属和方案选择上。通过共同预测、轮流验证和结果记录，幼儿逐步形成了基于证据进行协商的合作方式。',
   },
-])
+] : [])
 const overallSummaryStatus = ref(props.item.status === '已完成' ? '已完成' : '待生成')
 const archiveStatus = ref(props.item.status === '已完成' ? '已完成' : '待生成')
 const generatingResult = ref('')
@@ -150,11 +160,12 @@ const tabs = computed(() => (
 ))
 const totalReplies = computed(() => topics.value.reduce((sum, topic) => sum + topic.replies.length, 0))
 const caseCompletedCount = computed(() => caseResults.filter((item) => item.status === '已完成').length)
-const allCasesCompleted = computed(() => caseCompletedCount.value === caseResults.length)
+const allCasesCompleted = computed(() => !hasCases.value || caseCompletedCount.value === caseResults.length)
+const resultTotal = computed(() => hasCases.value ? 5 : 4)
 const resultCompletedCount = computed(() => [
   minutesStatus.value === '已生成',
   overallSummaryStatus.value === '已完成',
-  allCasesCompleted.value,
+  hasCases.value ? allCasesCompleted.value : null,
   meetingEvaluationStatus.value === '已生成',
   archiveStatus.value === '已完成',
 ].filter(Boolean).length)
@@ -377,7 +388,7 @@ const openPrimaryAction = () => {
   scrollPageTop()
 }
 
-const startTranscription = (fileName = '沙水游戏专题教研现场录音.m4a') => {
+const startTranscription = (fileName = hasCases.value ? '沙水游戏专题教研现场录音.m4a' : '绘本表演支持策略专题教研录音.m4a') => {
   recordingFileName.value = fileName
   recordingStatus.value = '转写中'
   minutesStatus.value = '待生成'
@@ -439,6 +450,7 @@ const confirmRecord = () => {
         <div>
           <div class="detail-badges">
             <el-tag :type="statusType">{{ currentStatus }}</el-tag>
+            <el-tag :type="hasCases ? undefined : 'warning'" effect="plain">{{ hasCases ? '案例教研' : '专题教研' }}</el-tag>
             <span>{{ item.scope }}</span>
           </div>
           <h1>{{ item.title }}</h1>
@@ -529,7 +541,7 @@ const confirmRecord = () => {
         </button>
       </section>
 
-      <section class="context-card context-cases-card">
+      <section v-if="hasCases" class="context-card context-cases-card">
         <header><div><span>关联案例</span><strong>{{ caseResults.length }}</strong></div><small>点击预览</small></header>
         <button
           v-for="caseItem in caseResults"
@@ -604,13 +616,13 @@ const confirmRecord = () => {
     <div v-else-if="activeTab === '教研主题'" class="overview-grid">
       <div class="overview-main">
         <h2 id="theme-goal" class="substep-anchor">教研目标</h2>
-        <p>基于小六班连续三周的沙水游戏观察，幼儿多次尝试修复沟渠坍塌，但在结构加固、材料选择与同伴协作方面仍存在持续探究空间。</p>
+        <p>{{ hasCases ? '基于小六班连续三周的沙水游戏观察，幼儿多次尝试修复沟渠坍塌，但在结构加固、材料选择与同伴协作方面仍存在持续探究空间。' : '围绕教师在绘本表演游戏中的介入时机与支持方式，梳理共性困惑、对照实践经验，并形成可带回班级验证的支持策略。' }}</p>
         <h2 id="theme-plan" class="substep-anchor">研讨安排</h2>
         <ol>
-          <li>案例回看：聚焦关键片段，描述幼儿行为事实。</li>
+          <li>{{ hasCases ? '案例回看：聚焦关键片段，描述幼儿行为事实。' : '经验唤醒：结合准备素材梳理当前共性问题。' }}</li>
           <li>话题广场：围绕介入时机与支持方式发表话题。</li>
           <li>现场共研：形成可验证的支持策略。</li>
-          <li>实践回访：记录策略实施效果并完成小结。</li>
+          <li>{{ hasCases ? '实践回访：记录策略实施效果并完成小结。' : '实践回访：记录策略实施效果并完成专题复盘。' }}</li>
         </ol>
         <section id="theme-materials" class="preparation-files substep-anchor">
           <div class="preparation-files-head">
@@ -777,7 +789,7 @@ const confirmRecord = () => {
         <div class="result-progress-panel">
           <div class="result-progress-head">
             <div><strong>成果完成进度</strong></div>
-            <b>{{ resultCompletedCount }}/5</b>
+            <b>{{ resultCompletedCount }}/{{ resultTotal }}</b>
           </div>
           <div class="result-progress-source" :class="{ done: recordingStatus === '转写完成' }">
             <span><el-icon><Headset /></el-icon></span>
@@ -787,7 +799,7 @@ const confirmRecord = () => {
           <div class="result-progress-groups">
             <section class="result-progress-group parallel">
               <div class="result-progress-group-head"><strong>并行生成</strong></div>
-              <div class="result-progress parallel-results">
+              <div class="result-progress parallel-results" :class="{ 'without-cases': !hasCases }">
                 <div class="result-progress-step" :class="{ done: minutesStatus === '已生成' }">
                   <span><el-icon><Document /></el-icon></span>
                   <div><strong>会议纪要分析</strong><small>{{ minutesStatus }}</small></div>
@@ -796,7 +808,7 @@ const confirmRecord = () => {
                   <span><el-icon><CircleCheck /></el-icon></span>
                   <div><strong>教研总结</strong><small>{{ overallSummaryStatus }}</small></div>
                 </div>
-                <div class="result-progress-step" :class="{ done: allCasesCompleted }">
+                <div v-if="hasCases" class="result-progress-step" :class="{ done: allCasesCompleted }">
                   <span><el-icon><Document /></el-icon></span>
                   <div><strong>案例小结</strong><small>{{ caseCompletedCount }}/{{ caseResults.length }} 已完成</small></div>
                 </div>
@@ -851,7 +863,7 @@ const confirmRecord = () => {
           </div>
         </section>
 
-        <section id="result-cases" class="case-summary-section substep-anchor">
+        <section v-if="hasCases" id="result-cases" class="case-summary-section substep-anchor">
           <div class="result-section-head">
             <div><span>03</span><div><h3>案例小结</h3></div></div>
             <strong>{{ caseCompletedCount }}/{{ caseResults.length }} 已完成</strong>
@@ -894,8 +906,8 @@ const confirmRecord = () => {
         </section>
 
         <section id="result-review" class="meeting-output-section evaluation-output substep-anchor">
-          <div class="result-section-head"><div><span>04</span><div><h3>AI 会议自评</h3></div></div><el-tag :type="meetingEvaluationStatus === '已生成' ? 'success' : meetingEvaluationStatus === '生成中' ? 'warning' : 'info'" effect="plain">{{ meetingEvaluationStatus }}</el-tag></div>
-          <div v-if="meetingEvaluationStatus === '已生成' || role === '管理视角'" class="meeting-output-body"><p v-if="meetingEvaluationStatus === '已生成'" class="evaluation-copy">本次教研聚焦明确，教师围绕观察事实展开讨论；建议下一轮增加实践回访的证据对照，持续追踪支持策略的有效性。</p><el-button v-if="role === '管理视角'" type="primary" plain :disabled="minutesStatus !== '已生成' || overallSummaryStatus !== '已完成' || !allCasesCompleted" :loading="meetingEvaluationStatus === '生成中'" @click="generateMeetingEvaluation">AI 生成会议自评</el-button></div>
+          <div class="result-section-head"><div><span>{{ hasCases ? '04' : '03' }}</span><div><h3>AI 会议自评</h3></div></div><el-tag :type="meetingEvaluationStatus === '已生成' ? 'success' : meetingEvaluationStatus === '生成中' ? 'warning' : 'info'" effect="plain">{{ meetingEvaluationStatus }}</el-tag></div>
+          <div v-if="meetingEvaluationStatus === '已生成' || role === '管理视角'" class="meeting-output-body"><p v-if="meetingEvaluationStatus === '已生成'" class="evaluation-copy">{{ hasCases ? '本次教研聚焦明确，教师围绕观察事实展开讨论；建议下一轮增加实践回访的证据对照，持续追踪支持策略的有效性。' : '本次专题教研的问题边界清晰，教师能结合实践经验形成共同策略；建议下一轮补充班级实践回访，对照策略实施前后的变化。' }}</p><el-button v-if="role === '管理视角'" type="primary" plain :disabled="minutesStatus !== '已生成' || overallSummaryStatus !== '已完成' || !allCasesCompleted" :loading="meetingEvaluationStatus === '生成中'" @click="generateMeetingEvaluation">AI 生成会议自评</el-button></div>
         </section>
 
         <section id="result-archive" class="report-result-section archive-result-section substep-anchor" :class="{ locked: !allResultsReadyForArchive }">
@@ -934,14 +946,14 @@ const confirmRecord = () => {
         v-else-if="role === '教师视角' && currentStage >= 4"
         description="教研成果正在整理，发布后即可查看"
       />
-      <el-empty v-else description="完成现场记录后，才能生成案例小结、教研总结与会议归档包" />
+      <el-empty v-else :description="hasCases ? '完成现场记录后，才能生成案例小结、教研总结与会议归档包' : '完成现场记录后，才能生成教研总结与会议归档包'" />
     </div>
 
     <el-empty v-else description="18 位教师已加入本次教研" />
     </section>
     </div>
 
-    <el-dialog v-model="casePreviewDialog" width="720px" class="case-context-dialog">
+    <el-dialog v-if="hasCases" v-model="casePreviewDialog" width="720px" class="case-context-dialog">
       <template #header>
         <div class="case-context-dialog-head">
           <span>关联案例 {{ selectedCasePreview?.id }}</span>

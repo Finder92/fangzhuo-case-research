@@ -138,13 +138,14 @@ const hasResults = (item) => item.status === '已完成' || item.stage >= 4
         >
           <div class="topic-cell">
             <div class="topic-cover">
-              <img :src="item.cover || fallbackCover" :alt="`${item.title}案例封面`" />
-              <span>{{ item.caseCount || 1 }} 个案例</span>
+              <img :src="item.cover || fallbackCover" :alt="`${item.title}教研封面`" />
+              <span>{{ item.researchType === 'topic' ? '专题教研' : `${item.caseCount || 1} 个案例` }}</span>
             </div>
             <div class="topic-content">
               <div class="topic-title">{{ item.title }}</div>
               <div class="topic-meta">
-                <el-tag size="small" effect="plain">{{ item.scope }}</el-tag>
+                <el-tag size="small" :type="item.researchType === 'topic' ? 'warning' : undefined" effect="plain">{{ item.researchType === 'topic' ? '专题教研' : item.scope }}</el-tag>
+                <el-tag v-if="item.researchType === 'topic'" size="small" effect="plain">{{ item.scope }}</el-tag>
                 <span>主持人：{{ item.host }}</span>
               </div>
             </div>

@@ -1,11 +1,12 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { MagicStick, Search, Connection, RefreshRight, VideoPlay, Check, CircleCheck } from '@element-plus/icons-vue'
+import { MagicStick, Search, Connection, RefreshRight, VideoPlay, Check, CircleCheck, DocumentAdd } from '@element-plus/icons-vue'
 import { observations } from '../data/observations'
 
 const emit = defineEmits(['generate-advice'])
 const selected = ref([])
+const activeRecordTab = ref('original')
 const keyword = ref('')
 const activeType = ref('全部')
 const activeScene = ref('全部')
@@ -18,6 +19,49 @@ const storyForm = reactive({ semester: '2026年春季学期', section: '幼儿�
 const detailVisible = ref(false)
 const detailRecord = ref(null)
 const storyPublished = ref(false)
+const mergeVisible = ref(false)
+const mergeRecords = ref([])
+const combinedDetailVisible = ref(false)
+const activeCombinedRecord = ref(null)
+const mergeForm = reactive({ title: '', content: '' })
+const combinedRecords = ref([
+  {
+    id: 'combined-1',
+    title: '从独立搭建到共同规划：幼儿协商与材料替代的连续观察',
+    content: '连续三次观察显示，幼儿从各自搭建逐步形成共同目标，并能在材料不足时提出替代方案。教师主要通过回看照片、追问计划和保留调整痕迹支持幼儿持续协商。',
+    sourceIds: [1, 4, 6],
+    sourceCount: 3,
+    dateRange: '2026-07-20 — 2026-07-28',
+    children: ['乐乐', '米米', '安安'],
+    teacher: '李老师',
+    updated: '今天 10:26',
+    caseStatus: '已生成案例',
+  },
+  {
+    id: 'combined-2',
+    title: '角色游戏中的主动协商：从轮换角色到共同解决问题',
+    content: '幼儿在邮局和小医院两次角色游戏中，都尝试用轮换、说明理由和重新分工的方式解决冲突。组合观察保留了两次现场记录的时间顺序和关键对话。',
+    sourceIds: [3, 8],
+    sourceCount: 2,
+    dateRange: '2026-07-18 — 2026-07-25',
+    children: ['轩轩', '珺珺'],
+    teacher: '王老师',
+    updated: '昨天 16:40',
+    caseStatus: '未生成案例',
+  },
+  {
+    id: 'combined-3',
+    title: '持续探究中的预测与验证：水流、植物与动物观察',
+    content: '把三类自然观察按“提出问题—持续记录—调整判断”的线索重新组织，便于教师后续形成跨活动场景的学习品质案例。',
+    sourceIds: [5, 6, 9],
+    sourceCount: 3,
+    dateRange: '2026-07-17 — 2026-07-21',
+    children: ['安安', '森森'],
+    teacher: '韩老师',
+    updated: '08月15日',
+    caseStatus: '未生成案例',
+  },
+])
 
 const filtered = computed(() => observations.filter((item) => (
   !keyword.value || `${item.title}${item.child}${item.teacher}`.includes(keyword.value)
@@ -29,6 +73,51 @@ const observationDateText = computed(() => [...new Set(storyRecords.value.map((r
   .join('、'))
 const activityTypes = ['全部', '游戏活动', '生活活动', '阅读活动', '天气观察', '动植物观察', '艺术活动', '表征/倾听活动', '回顾/分享活动', '其它活动', '小车区']
 const activityScenes = ['全部', '入园', '离园', '进餐', '盥洗/过渡环节', '户外活动', '午睡环节', '回溯性活动/教育活动', '自主游戏']
+
+const buildMergedObservation = (records) => records
+  .map((record, index) => `### ${index + 1}. ${record.date}｜${record.title}\n\n${record.record}\n\n教师分析：${record.analysis}`)
+  .join('\n\n')
+
+const openMerge = () => {
+  if (selected.value.length < 2) return ElMessage.warning('请至少选择 2 篇观察记录')
+  mergeRecords.value = [...selected.value].sort((a, b) => a.date.localeCompare(b.date))
+  const children = [...new Set(mergeRecords.value.flatMap((record) => record.children))]
+  mergeForm.title = `${children.slice(0, 2).join('、')}的连续观察｜${mergeRecords.value[0].title}`
+  mergeForm.content = buildMergedObservation(mergeRecords.value)
+  mergeVisible.value = true
+}
+
+const saveCombinedObservation = (generateCase) => {
+  if (!mergeForm.title.trim() || !mergeForm.content.trim()) return ElMessage.warning('请完善组合观察标题和内容')
+  const orderedDates = mergeRecords.value.map((record) => record.date).sort()
+  combinedRecords.value.unshift({
+    id: `combined-${Date.now()}`,
+    title: mergeForm.title.trim(),
+    content: mergeForm.content.trim(),
+    sourceIds: mergeRecords.value.map((record) => record.id),
+    sourceCount: mergeRecords.value.length,
+    dateRange: `${orderedDates[0]} — ${orderedDates.at(-1)}`,
+    children: [...new Set(mergeRecords.value.flatMap((record) => record.children))],
+    teacher: [...new Set(mergeRecords.value.map((record) => record.teacher))].join('、'),
+    updated: '刚刚',
+    caseStatus: generateCase ? '已生成案例' : '未生成案例',
+  })
+  mergeVisible.value = false
+  selected.value = []
+  activeRecordTab.value = 'combined'
+  ElMessage.success(generateCase ? '组合观察已保存，并已进入案例生成' : '组合观察已保存，可稍后继续生成案例')
+}
+
+const openCombinedDetail = (record) => {
+  activeCombinedRecord.value = record
+  combinedDetailVisible.value = true
+}
+
+const continueCase = (record) => {
+  record.caseStatus = '已生成案例'
+  record.updated = '刚刚'
+  ElMessage.success('已从该组合观察继续生成案例')
+}
 
 const toggleSelection = (record) => {
   const exists = selected.value.some((item) => item.id === record.id)
@@ -96,10 +185,15 @@ const syncStory = () => {
     <div class="crumb">观察与反思 / 观察记录</div>
     <div class="page-heading observation-heading new-observation-heading">
       <div><h1>观察记录</h1></div>
-      <el-button type="primary">新建观察记录</el-button>
+      <el-button v-if="activeRecordTab === 'original'" type="primary">新建观察记录</el-button>
     </div>
 
-    <div class="observation-gallery-panel">
+    <div class="observation-view-tabs" role="tablist" aria-label="观察记录类型">
+      <button :class="{ active: activeRecordTab === 'original' }" role="tab" :aria-selected="activeRecordTab === 'original'" @click="activeRecordTab = 'original'">原始观察 <span>573</span></button>
+      <button :class="{ active: activeRecordTab === 'combined' }" role="tab" :aria-selected="activeRecordTab === 'combined'" @click="activeRecordTab = 'combined'">组合观察 <span>12</span></button>
+    </div>
+
+    <div v-if="activeRecordTab === 'original'" class="observation-gallery-panel">
       <div class="observation-filters new-observation-filters">
         <el-select model-value="2026年春季学期" class="filter-semester"><el-option label="2026年春季学期" value="2026年春季学期" /></el-select>
         <el-select model-value="全部班级"><el-option label="全部班级" value="全部班级" /><el-option label="中一班" value="中一班" /></el-select>
@@ -123,6 +217,7 @@ const syncStory = () => {
           <button v-if="selected.length" class="clear-selection" @click="selected = []">清空选择</button>
           <el-button class="batch-story-button" :disabled="!selected.length" @click="openStory(selected)"><el-icon><Connection /></el-icon> AI 生成成长档案</el-button>
           <el-button type="primary" :disabled="!selected.length" @click="emit('generate-advice', selected)"><el-icon><MagicStick /></el-icon> AI 生成活动建议</el-button>
+          <el-button class="merge-case-button" type="primary" :disabled="selected.length < 2" @click="openMerge"><el-icon><DocumentAdd /></el-icon> 合并生成案例</el-button>
         </div>
       </div>
 
@@ -150,6 +245,29 @@ const syncStory = () => {
       <div class="gallery-pagination"><el-pagination background layout="prev, pager, next" :total="573" :page-size="20" /></div>
     </div>
 
+    <div v-else class="combined-observation-panel">
+      <header class="combined-panel-head">
+        <div><h2>组合观察</h2><p>多篇原始观察按时间线整理后保存；原始记录不会被修改。</p></div>
+        <el-input v-model="keyword" clearable :prefix-icon="Search" placeholder="搜索组合观察标题或幼儿" />
+      </header>
+      <div class="combined-record-list">
+        <article v-for="record in combinedRecords.filter((item) => !keyword || `${item.title}${item.children.join('')}${item.teacher}`.includes(keyword))" :key="record.id" class="combined-record-card">
+          <div class="combined-record-mark"><el-icon><Connection /></el-icon><span>{{ record.sourceCount }} 篇来源</span></div>
+          <div class="combined-record-main">
+            <div class="combined-record-title"><h3>{{ record.title }}</h3><el-tag :type="record.caseStatus === '已生成案例' ? 'success' : 'info'" effect="plain">{{ record.caseStatus }}</el-tag></div>
+            <p>{{ record.content }}</p>
+            <div class="combined-record-meta"><span>{{ record.dateRange }}</span><span>{{ record.children.join('、') }}</span><span>{{ record.teacher }}</span><span>{{ record.updated }}</span></div>
+          </div>
+          <div class="combined-record-actions">
+            <el-button plain @click="openCombinedDetail(record)">查看组合观察</el-button>
+            <el-button v-if="record.caseStatus !== '已生成案例'" type="primary" @click="continueCase(record)">继续生成案例</el-button>
+            <el-button v-else type="primary" plain @click="ElMessage.success('已打开关联案例')">查看案例</el-button>
+          </div>
+        </article>
+      </div>
+      <div class="gallery-pagination"><el-pagination background layout="prev, pager, next" :total="12" :page-size="5" /></div>
+    </div>
+
     <el-dialog v-model="detailVisible" width="760" class="observation-detail-dialog">
       <template #header><div class="detail-dialog-title"><h3>观察记录详情</h3><span>原始记录</span></div></template>
       <div v-if="detailRecord" class="observation-detail">
@@ -161,6 +279,37 @@ const syncStory = () => {
         </div>
       </div>
       <template #footer><el-button @click="detailVisible = false">关闭</el-button><el-button type="primary" @click="detailVisible = false; toggleSelection(detailRecord)">选择此记录</el-button></template>
+    </el-dialog>
+
+    <el-dialog v-model="mergeVisible" width="1120" class="merge-observation-dialog" :close-on-click-modal="false">
+      <template #header><div class="story-dialog-title"><span class="ai-orb"><el-icon><Connection /></el-icon></span><div><h3>合并观察并生成案例</h3><p>先确认组合内容；保存后可在“组合观察”页签中继续查看和使用</p></div></div></template>
+      <div class="merge-observation-layout">
+        <aside>
+          <div class="merge-source-head"><strong>原始观察来源</strong><em>{{ mergeRecords.length }} 篇</em></div>
+          <article v-for="record in mergeRecords" :key="record.id">
+            <span>{{ record.date }}</span><strong>{{ record.title }}</strong><small>{{ record.children.join('、') }} · {{ record.teacher }}</small>
+          </article>
+          <p class="merge-source-tip">组合观察只保存整理后的副本，原始观察记录和媒体保持不变。</p>
+        </aside>
+        <main>
+          <label>组合观察标题</label>
+          <el-input v-model="mergeForm.title" maxlength="80" show-word-limit />
+          <label>合并后的观察记录 <span>可编辑</span></label>
+          <el-input v-model="mergeForm.content" type="textarea" :rows="18" resize="none" />
+        </main>
+      </div>
+      <template #footer><span class="merge-footer-note">保存时同步记录 {{ mergeRecords.length }} 篇原始来源</span><el-button @click="mergeVisible = false">取消</el-button><el-button @click="saveCombinedObservation(false)">仅保存组合观察</el-button><el-button type="primary" @click="saveCombinedObservation(true)">保存并生成案例</el-button></template>
+    </el-dialog>
+
+    <el-dialog v-model="combinedDetailVisible" width="820" class="combined-detail-dialog">
+      <template #header><div class="detail-dialog-title"><h3>组合观察详情</h3><span>{{ activeCombinedRecord?.sourceCount }} 篇原始来源</span></div></template>
+      <div v-if="activeCombinedRecord" class="combined-detail-content">
+        <h2>{{ activeCombinedRecord.title }}</h2>
+        <div class="combined-record-meta"><span>{{ activeCombinedRecord.dateRange }}</span><span>{{ activeCombinedRecord.children.join('、') }}</span><span>{{ activeCombinedRecord.teacher }}</span></div>
+        <pre>{{ activeCombinedRecord.content }}</pre>
+        <div class="source-trace"><strong>来源追溯</strong><span v-for="sourceId in activeCombinedRecord.sourceIds" :key="sourceId">原始观察 #{{ sourceId }}</span></div>
+      </div>
+      <template #footer><el-button @click="combinedDetailVisible = false">关闭</el-button><el-button v-if="activeCombinedRecord?.caseStatus !== '已生成案例'" type="primary" @click="continueCase(activeCombinedRecord); combinedDetailVisible = false">继续生成案例</el-button></template>
     </el-dialog>
 
     <el-dialog v-model="storyVisible" width="1180" class="growth-story-dialog" :close-on-click-modal="false">

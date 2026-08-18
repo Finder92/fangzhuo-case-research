@@ -17,6 +17,7 @@ export const researchItems = [
     progress: 62,
     cover: cover('sand-water.svg'),
     caseCount: 2,
+    researchType: 'case',
   },
   {
     id: 2,
@@ -33,6 +34,7 @@ export const researchItems = [
     progress: 35,
     cover: cover('construction.svg'),
     caseCount: 3,
+    researchType: 'case',
   },
   {
     id: 3,
@@ -49,6 +51,7 @@ export const researchItems = [
     progress: 82,
     cover: cover('role-play.svg'),
     caseCount: 1,
+    researchType: 'case',
   },
   {
     id: 4,
@@ -65,22 +68,24 @@ export const researchItems = [
     progress: 100,
     cover: cover('reflection.svg'),
     caseCount: 4,
+    researchType: 'case',
   },
   {
     id: 5,
     title: '教师如何通过“最小化且有效”的介入支持绘本表演游戏走向深度学习',
     scope: '年级组教研',
-    stage: 2,
-    status: '研讨中',
+    stage: 4,
+    status: '待总结',
     host: '王朝阳',
     participants: 6,
     topics: 2,
     replies: 8,
     date: '08月12日 10:00',
     updated: '07月28日',
-    progress: 68,
-    cover: cover('story-play.svg'),
-    caseCount: 2,
+    progress: 82,
+    cover: cover('reflection.svg'),
+    caseCount: 0,
+    researchType: 'topic',
   },
 ]
 
